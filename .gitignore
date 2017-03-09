@@ -1,5 +1,6 @@
 FindMyWay/Library/
 FindMyWay/obj
+FindMyWay/Temp
 FindMyWay/*.csproj
 FindMyWay/*.userprefs
 FindMyWay/*.sln

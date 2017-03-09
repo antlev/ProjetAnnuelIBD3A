@@ -29,7 +29,8 @@ public class MainScript : MonoBehaviour
 	public void OnGUI()
 	{
 		
-		Debug.Log();
+		logResults ("test");
+		Debug.Log ("test");
 
 		// Démarrage d'une liste de composants visuels verticale
 		GUILayout.BeginVertical();
@@ -113,8 +114,21 @@ public class MainScript : MonoBehaviour
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 
+		//-------------------------------------------------
+		//------------------ PARAMETRES -------------------
+		//-------------------------------------------------
 		const int nbMoveInSol = 6;
+		//-------------------------------------------------
+		// Nous récupérons l'erreur minimum atteignable
+		// Ceci est optionnel et dépendant de la fonction
+		// d'erreur
+		// valable uniquement pour les problèmes sans barrières
+		var minError = GetMinError();
+		// Recherche continuellement d'une meilleure solution
+		// var minError = 0;
+		//-------------------------------------------------
 
+	
 		// Génére une solution initiale au hazard (ici une séquence
 		// de 42 mouvements)
 		var currentSolution = new PathSolutionScript(nbMoveInSol);
@@ -127,10 +141,7 @@ public class MainScript : MonoBehaviour
 		yield return StartCoroutine(scoreEnumerator);
 		float currentError = scoreEnumerator.Current;
 
-		// Nous récupérons l'erreur minimum atteignable
-		// Ceci est optionnel et dépendant de la fonction
-		// d'erreur
-		var minimumError = GetMinError();
+
 
 		// Affichage de l'erreur initiale
 		Debug.Log("start currentError >" + currentError + "< - minimumError >" + minimumError + "<");
@@ -140,8 +151,8 @@ public class MainScript : MonoBehaviour
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
-		// Tout pendant que l'erreur minimale n'est pas atteinte
-		while (currentError != GetMinError())
+
+		while (currentError != minError)
 		{
 			// On obtient une copie de la solution courante
 			// pour ne pas la modifier dans le cas ou la modification
@@ -261,8 +272,24 @@ public class MainScript : MonoBehaviour
 	{
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
-
+		//-------------------------------------------------
+		//------------------ PARAMETRES -------------------
+		//-------------------------------------------------
+		// Nombre de bouvement contenu dans NotificationServices solutions
 		const int nbSolutionMoves = 6;
+		// Initialisation du nombre d'itérations maximum
+		const int iterationsMax = 1000;
+		//-------------------------------------------------
+		// Nous récupérons l'erreur minimum atteignable
+		// Ceci est optionnel et dépendant de la fonction
+		// d'erreur
+		// valable uniquement pour les problèmes sans barrières
+		var minError = GetMinError();
+		// Recherche continuellement d'une meilleure solution
+		// var minError = 0;
+		// prob() And temp() functions
+		//-------------------------------------------------
+
 
 		// Génére une solution initiale au hazard (ici une séquence
 		// de 42 mouvements)
@@ -276,10 +303,7 @@ public class MainScript : MonoBehaviour
 		yield return StartCoroutine(scoreEnumerator);
 		float currentError = scoreEnumerator.Current;
 
-		// Nous récupérons l'erreur minimum atteignable
-		// Ceci est optionnel et dépendant de la fonction
-		// d'erreur
-		var minimumError = GetMinError();
+
 
 		// Affichage de l'erreur initiale
 		Debug.Log("start currentError >" + currentError + "< - minimumError >" + minimumError + "<");
@@ -287,11 +311,8 @@ public class MainScript : MonoBehaviour
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
-		// Initialisation du nombre d'itérations maximum
-		const int iterationsMax = 1000;
-
 		// Tout pendant que l'erreur minimale n'est pas atteinte
-		while (currentError != GetMinError() && iterations <= iterationsMax)
+		while (currentError != minError && iterations <= iterationsMax)
 		{
 			// On obtient une copie de la solution courante
 			// pour ne pas la modifier dans le cas ou la modification
@@ -566,6 +587,8 @@ public class MainScript : MonoBehaviour
 	{
 		System.IO.StreamWriter sw = System.IO.File.AppendText(
 			getTempPath() + "projet_annuel.log");
+
+//		Debug.Log (sw.ToString);
 		try
 		{
 			string logLine = System.String.Format(
