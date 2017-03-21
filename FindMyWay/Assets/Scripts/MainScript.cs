@@ -126,6 +126,7 @@ public class MainScript : MonoBehaviour
 		var minError = GetMinError();
 		// Recherche continuellement d'une meilleure solution
 		// var minError = 0;
+		const int iterationsMax = 10000;
 		//-------------------------------------------------
 
 	
@@ -142,7 +143,7 @@ public class MainScript : MonoBehaviour
 		float currentError = scoreEnumerator.Current;
 
 
-
+		var minimumError = 0;
 		// Affichage de l'erreur initiale
 		Debug.Log("start currentError >" + currentError + "< - minimumError >" + minimumError + "<");
 		logResults("Results for NaiveLocalSearch -- number of moves in solution : " );
@@ -151,8 +152,8 @@ public class MainScript : MonoBehaviour
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
-
-		while (currentError != minError)
+//		while (currentError != minError)
+		while (iterations < iterationsMax)
 		{
 			// On obtient une copie de la solution courante
 			// pour ne pas la modifier dans le cas ou la modification
@@ -256,6 +257,7 @@ public class MainScript : MonoBehaviour
 			var scoreEnumerator = GetError(solution);
 			yield return StartCoroutine(scoreEnumerator);
 			float currentError = scoreEnumerator.Current;
+			Debug.Log("currentError >" + currentError + "<");
 		}
 		yield return null;
 	}
@@ -276,7 +278,7 @@ public class MainScript : MonoBehaviour
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
 		// Nombre de bouvement contenu dans NotificationServices solutions
-		const int nbSolutionMoves = 6;
+		const int nbSolutionMoves = 200;
 		// Initialisation du nombre d'itérations maximum
 		const int iterationsMax = 1000;
 		//-------------------------------------------------
@@ -304,15 +306,17 @@ public class MainScript : MonoBehaviour
 		float currentError = scoreEnumerator.Current;
 
 
+		int minimumError = 0;
+
 
 		// Affichage de l'erreur initiale
 		Debug.Log("start currentError >" + currentError + "< - minimumError >" + minimumError + "<");
 
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
-
+		float rdm;
 		// Tout pendant que l'erreur minimale n'est pas atteinte
-		while (currentError != minError && iterations <= iterationsMax)
+		while (iterations <= iterationsMax)
 		{
 			// On obtient une copie de la solution courante
 			// pour ne pas la modifier dans le cas ou la modification
@@ -334,9 +338,9 @@ public class MainScript : MonoBehaviour
 			// On affiche pour des raisons de Debug et de suivi
 			// la comparaison entre l'erreur courante et la
 			// nouvelle erreur
-			float rdm =  Random.Range(0,1); 
+			rdm =  Random.Range(0,1); 
 			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
-			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
+			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm > " + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
 
 			if (newError <= currentError || rdm < prob)
 			{
@@ -376,9 +380,9 @@ public class MainScript : MonoBehaviour
 			return 0;
 		} else {
 			// Variations linéaires de la température
-			//return (float)iterationsMax - iterations;
+//			return (float)iterationsMax - iterations;
 			//Variations exponentielles
-			return (float)Mathf.Exp(iterations-iterationsMax);
+			return (float)Mathf.Exp(iterationsMax-iterations);
 		}
 
 	}
@@ -431,8 +435,11 @@ public class MainScript : MonoBehaviour
 //			{
 //				var p1 = bests[Random.Range(0, popSize)];
 //				var p2 = bests[Random.Range(0, popSize)];
+				
+//	newPop[i] = Crossover(p1,p2);
+
 //			}
-//
+//	
 //			// MUTATION
 //			for(var i = 0;i < popSize; i++)
 //			{
@@ -442,9 +449,9 @@ public class MainScript : MonoBehaviour
 //					var pos1 = Random.Range(0, cubes.Length);
 //					var pos2 = Random.Range(0, cubes.Length);
 //
-//					var tmp = population[i][pos1];
-//					population[i][pos1] = population[i][pos2];
-//					population[i][pos2] = tmp;
+	//					var tmp = newPopulation[i][pos1];
+	//					newPopulation[i][pos1] = newPopulation[i][pos2];
+	//					newPopulation[i][pos2] = tmp;
 //				}
 //			}
 //
@@ -912,3 +919,6 @@ public class MainScript : MonoBehaviour
 //	}
 //
 //}
+
+
+
