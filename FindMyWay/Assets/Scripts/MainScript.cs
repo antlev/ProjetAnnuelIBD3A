@@ -29,7 +29,7 @@ public class MainScript : MonoBehaviour
 	public void OnGUI()
 	{
 		
-		Debug.Log();
+//		Debug.Log();
 
 		// Démarrage d'une liste de composants visuels verticale
 		GUILayout.BeginVertical();
@@ -262,7 +262,7 @@ public class MainScript : MonoBehaviour
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 
-		const int nbSolutionMoves = 6;
+		const int nbSolutionMoves = 42;
 
 		// Génére une solution initiale au hazard (ici une séquence
 		// de 42 mouvements)
@@ -313,9 +313,9 @@ public class MainScript : MonoBehaviour
 			// On affiche pour des raisons de Debug et de suivi
 			// la comparaison entre l'erreur courante et la
 			// nouvelle erreur
-			float rdm =  Random.Range(0,1); 
+			float rdm =  Random.value; 
 			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
-			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
+			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
 
 			if (newError <= currentError || rdm < prob)
 			{
@@ -362,76 +362,81 @@ public class MainScript : MonoBehaviour
 
 	}
 
-//	// Coroutine à utiliser pour implémenter un algorithme génétique
-//	public IEnumerator GeneticAlgorithm()
-//	{
-//		// Indique que l'algorithme est en cours d'exécution
-//		_isRunning = true;
-//
-//		const int popSize = 200;
-//		const float bestPercentage = 0.2f;
-//		const int bestCount = (int)(popSize * bestPercentage);
-//		const float mutationRate = 0.1f;
-//
-//		const int nbSolutionMoves = 6;
-//		// INITIALISATION DE LA POPULATION
-//		var population = new Vector3[popSize];
-//		for(var i = 0; i < popSize; i++)
-//		{
-//			population[i] = new PathSolutionScript(nbSolutionMoves);
-//		}
-//
-//		while (true)
-//		{
-//			// EVALUATION DE LA POPULATION
-//			var scoredPopulation = new Dictionary<Vector3[], int>();
-//
-//			for(var i = 0; i < popSize; i++)
-//			{
-//				scoredPopulation.Add(population[i], GetError(population[i]));
-//			}
-//
-//			// SELECTION DES REPRODUCTEURS
-//			var bests = scoredPopulation
-//				.OrderBy(kv => kv.Value)
-//				.Take(bestCount)
-//				.Select(kv => kv.Key)
-//				.ToArray();
-//
-//			if(bests.First == 0)
-//			{
-//				break;
-//			}
-//
-//			// CROISEMENT DE LA POPULATION
-//			var newPopulation = new Vector3[popSize];
-//
-//			for(var i = 0; i < popSize; i++)
-//			{
-//				var p1 = bests[Random.Range(0, popSize)];
-//				var p2 = bests[Random.Range(0, popSize)];
-//			}
-//
-//			// MUTATION
-//			for(var i = 0;i < popSize; i++)
-//			{
-//				var rdm = Random.Range(0f, 1f);
-//				if(rdm < mutationRate)
-//				{
-//					var pos1 = Random.Range(0, cubes.Length);
-//					var pos2 = Random.Range(0, cubes.Length);
-//
-//					var tmp = population[i][pos1];
-//					population[i][pos1] = population[i][pos2];
-//					population[i][pos2] = tmp;
-//				}
-//			}
-//
-//			population = newPopulation;
-//
-//			yield return null;
-//		}
-//	}
+	// Coroutine à utiliser pour implémenter un algorithme génétique
+	public IEnumerator GeneticAlgorithm()
+	{
+		// Indique que l'algorithme est en cours d'exécution
+		_isRunning = true;
+
+		const int popSize = 200;
+		const float bestPercentage = 0.2f;
+		const int bestCount = (int)(popSize * bestPercentage);
+		const float mutationRate = 0.1f;
+
+		const int nbMoveInSolution = 6;
+		// INITIALISATION DE LA POPULATION
+		PathSolutionScript[] population = new PathSolutionScript[popSize];
+
+		for(var i = 0; i < popSize; i++)
+		{
+			population[i] = new PathSolutionScript(nbMoveInSolution);
+		}
+
+		while (true)
+		{
+		// EVALUATION DE LA POPULATION
+			var scoredPopulation = new Dictionary<PathSolutionScript, IEnumerator<float>>();
+			for(var i = 0; i < popSize; i++)
+			{
+				scoredPopulation.Add(population[i], GetError(population[i]));
+			}
+
+		// SELECTION DES REPRODUCTEURS
+			var bests = scoredPopulation
+				.OrderBy(kv => kv.Value)
+				.Take(bestCount)
+				.Select(kv => kv.Key)
+				.ToArray();
+
+		// CROISEMENT DE LA POPULATION
+			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
+
+			// On sélectionne 2 solutions au hasard parmis les reproducteurs (solutions conservées)
+			var sol1 = bests[Random.Range(0, popSize-bestCount)];
+			var sol2 = bests[Random.Range(0, popSize-bestCount)];
+
+			// On croise les solutions (cad on échange une action entre les deux)
+			var random = Random.Range(0,nbMoveInSolution);
+			var tmp = sol1.Actions[random];
+			sol1.Actions[random] = sol2.Actions[random];
+			sol2.Actions[random] = tmp;
+
+		// MUTATION
+			for(var i = 0;i < bestCount; i++)
+			{
+				var rdm = Random.Range(0f, 1f);
+				if(rdm < mutationRate)
+				{
+					var pos1 = Random.Range(0, nbMoveInSolution);
+					var pos2 = Random.Range(0, nbMoveInSolution);
+
+					var tmp2 = bests[i].Actions[pos1];
+					bests[i].Actions [pos1] = bests [i].Actions [pos2];
+					bests[i].Actions [pos2] = tmp2;
+				}
+			}
+
+			for (var i = 0; i < bestCount; i++) 
+			{
+				newPopulation[i] = bests [i];
+			}
+			for (var i = bestCount; i < popSize; i++)
+			{
+				newPopulation[i] = new PathSolutionScript (nbMoveInSolution);
+			}
+			yield return null;
+		}
+	}
 
 	/// <summary>
 	/// Exemple d'erreur minimum (pas forcément toujours juste) renvoyant
@@ -482,7 +487,7 @@ public class MainScript : MonoBehaviour
 		var player = PlayerScript.CreatePlayer();
 
 		// Pour pouvoir visualiser la simulation (moins rapide)
-		player.RunWithoutSimulation = true;
+		player.RunWithoutSimulation = false;
 
 		// On lance la simulation en spécifiant
 		// la séquence d'action à exécuter

@@ -3,3 +3,4 @@ FindMyWay/obj
 FindMyWay/*.csproj
 FindMyWay/*.userprefs
 FindMyWay/*.sln
+FindMyWay/Temp/
