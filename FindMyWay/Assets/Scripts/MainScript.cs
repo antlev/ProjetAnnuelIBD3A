@@ -29,9 +29,6 @@ public class MainScript : MonoBehaviour
 	public void OnGUI()
 	{
 
-		logResults ("test");
-		Debug.Log ("test");
-
 		// Démarrage d'une liste de composants visuels verticale
 		GUILayout.BeginVertical();
 
@@ -60,9 +57,12 @@ public class MainScript : MonoBehaviour
 		// Affiche un bouton permettant le lancement de l'algorithme génétique
 		if (GUILayout.Button("DEMARRAGE ALGORITHME GENETIQUE"))
 		{
+			Debug.Log ("test");
 			// Le bouton est inactif si un algorithme est en cours d'exécution
 			if (!_isRunning)
 			{
+				Debug.Log ("test2");
+
 				// Démarrage de l'algorithme génétique en pseudo asynchrone
 				StartCoroutine("GeneticAlgorithm");
 			}
@@ -117,7 +117,7 @@ public class MainScript : MonoBehaviour
 		//-------------------------------------------------
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
-		const int nbMoveInSol = 6;
+		const int nbMoveInSol = 25;
 		//-------------------------------------------------
 		// Nous récupérons l'erreur minimum atteignable
 		// Ceci est optionnel et dépendant de la fonction
@@ -278,7 +278,7 @@ public class MainScript : MonoBehaviour
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
 		// Nombre de mouvement contenu dans NotificationServices solutions
-		const int nbSolutionMoves = 200;
+		const int nbSolutionMoves = 42;
 		// Initialisation du nombre d'itérations maximum
 		const int iterationsMax = 1000;
 		//-------------------------------------------------
@@ -388,10 +388,11 @@ public class MainScript : MonoBehaviour
 	// Coroutine à utiliser pour implémenter un algorithme génétique
 	public IEnumerator GeneticAlgorithm()
 	{
+
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 
-		const int popSize = 200;
+		const int popSize = 10;
 		const float bestPercentage = 0.2f;
 		const int bestCount = (int)(popSize * bestPercentage);
 		const float mutationRate = 0.1f;
@@ -405,13 +406,31 @@ public class MainScript : MonoBehaviour
 			population[i] = new PathSolutionScript(nbMoveInSolution);
 		}
 
+		int iterations = 0;
+
 		while (true)
 		{
+			Debug.Log ("iterations>" + iterations + "<");
+			++iterations;
+
 		// EVALUATION DE LA POPULATION
+			var scoreEnumerator = new IEnumerator<float>[popSize];		
 			var scoredPopulation = new Dictionary<PathSolutionScript, IEnumerator<float>>();
+
+
+
 			for(var i = 0; i < popSize; i++)
 			{
-				scoredPopulation.Add(population[i], GetError(population[i]));
+				// Récupére le score de chaque solution de la population
+				scoreEnumerator[i] = GetError(population [i]);
+				yield return StartCoroutine(scoreEnumerator[i]);
+				float error = scoreEnumerator[i].Current;
+
+				scoredPopulation.Add(population[i], scoreEnumerator[i]);
+
+
+				Debug.Log("[" + iterations + "] error >" + error + "<");
+
 			}
 
 		// SELECTION DES REPRODUCTEURS
@@ -420,6 +439,7 @@ public class MainScript : MonoBehaviour
 				.Take(bestCount)
 				.Select(kv => kv.Key)
 				.ToArray();
+
 
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
@@ -457,8 +477,8 @@ public class MainScript : MonoBehaviour
 			{
 				newPopulation[i] = new PathSolutionScript (nbMoveInSolution);
 			}
-			yield return null;
 		}
+		yield return null;
 	}
 	/// <summary>
 	/// Exemple d'erreur minimum (pas forcément toujours juste) renvoyant
@@ -537,7 +557,7 @@ public class MainScript : MonoBehaviour
 			+ player.PerformedActionsNumber
 			+ (player.FoundObstacle ? 1000 : 0);
 		
-		Debug.Log("play.FoundGoal >" + player.FoundGoal + "<");
+//		Debug.Log("play.FoundGoal >" + player.FoundGoal + "<");
 
 		// Détruit  l'objet de la simulation
 		Destroy(player.gameObject);
