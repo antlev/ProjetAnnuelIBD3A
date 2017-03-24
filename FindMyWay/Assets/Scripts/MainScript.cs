@@ -209,7 +209,7 @@ public class MainScript : MonoBehaviour
 
 		bool[][] booleanGrid = new bool[matrix.Length][];
 
-		// Concersion de la grille proposée par le probléme en grille booléenne (case vide / obstacle)
+		// Conversion de la grille proposée par le probléme en grille booléenne (case vide / obstacle)
 		for (int i = 0; i < matrix.Length; i++)
 		{
 			booleanGrid[i] = new bool[matrix[i].Length];
@@ -392,12 +392,12 @@ public class MainScript : MonoBehaviour
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 
-		const int popSize = 10;
-		const float bestPercentage = 0.2f;
+		const int popSize = 20;
+		const float bestPercentage = 0.35f;
 		const int bestCount = (int)(popSize * bestPercentage);
 		const float mutationRate = 0.1f;
 
-		const int nbMoveInSolution = 6;
+		const int nbMoveInSolution = 5;
 		// INITIALISATION DE LA POPULATION
 		PathSolutionScript[] population = new PathSolutionScript[popSize];
 
@@ -415,38 +415,50 @@ public class MainScript : MonoBehaviour
 
 		// EVALUATION DE LA POPULATION
 			var scoreEnumerator = new IEnumerator<float>[popSize];		
-			var scoredPopulation = new Dictionary<PathSolutionScript, IEnumerator<float>>();
+//			var scoredPopulation = new Dictionary<PathSolutionScript, IEnumerator<float>>();
 
+			///Initialisation du tableau destiné à contenir l'ensemble des
+			///couples configuration/score une fois la population évaluée
+			var scoredPopulation = new ScoredIndividual[popSize];
 
-
+			int solution = 0;
 			for(var i = 0; i < popSize; i++)
 			{
+				solution++;
 				// Récupére le score de chaque solution de la population
 				scoreEnumerator[i] = GetError(population [i]);
 				yield return StartCoroutine(scoreEnumerator[i]);
 				float error = scoreEnumerator[i].Current;
 
-				scoredPopulation.Add(population[i], scoreEnumerator[i]);
+
+				///Création d'un couple configuration/solution et stockage
+				///du score obtenu pour la configuration évaluée.
+				scoredPopulation[i] = new ScoredIndividual()
+				{
+					Configuration = population[i],
+					Score = error
+				};	
+
+//				scoredPopulation.Add(population[i], scoreEnumerator[i]);
 
 
-				Debug.Log("[" + iterations + "] error >" + error + "<");
+				Debug.Log("[" + iterations + "] solution n°" + solution + " error >" + error + "<");
 
 			}
 
 		// SELECTION DES REPRODUCTEURS
 			var bests = scoredPopulation
-				.OrderBy(kv => kv.Value)
+				.OrderBy((scoredindi) => scoredindi.Score)
 				.Take(bestCount)
-				.Select(kv => kv.Key)
+				.Select((scoredindi2) => scoredindi2.Configuration)
 				.ToArray();
-
 
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
 
 			// On sélectionne 2 solutions au hasard parmis les reproducteurs (solutions conservées)
-			var sol1 = bests[Random.Range(0, popSize-bestCount)];
-			var sol2 = bests[Random.Range(0, popSize-bestCount)];
+			var sol1 = bests[Random.Range(0, bestCount)];
+			var sol2 = bests[Random.Range(0, bestCount)];
 
 			// On croise les solutions (cad on échange une action entre les deux)
 			var random = Random.Range(0,nbMoveInSolution);
@@ -480,6 +492,25 @@ public class MainScript : MonoBehaviour
 		}
 		yield return null;
 	}
+
+	/// <summary>
+	/// Structure de donnée créée pour pouvoir stocker les 
+	/// associations configuration/score lors de l'étape
+	/// d'évaluation de la population.
+	/// </summary>
+	class ScoredIndividual
+	{
+		/// <summary>
+		/// La configuration des cubes (solution)
+		/// </summary>
+		public PathSolutionScript Configuration { get; set; }
+
+		/// <summary>
+		/// Le score de la configuration ci-dessus
+		/// </summary>
+		public float Score { get; set; }
+	}
+
 	/// <summary>
 	/// Exemple d'erreur minimum (pas forcément toujours juste) renvoyant
 	/// la distance de manhattan entre la case d'arrivée et la case de départ.
@@ -529,7 +560,7 @@ public class MainScript : MonoBehaviour
 		var player = PlayerScript.CreatePlayer();
 
 		// Pour pouvoir visualiser la simulation (moins rapide)
-		player.RunWithoutSimulation = false;
+		player.RunWithoutSimulation = true;
 
 		// On lance la simulation en spécifiant
 		// la séquence d'action à exécuter
