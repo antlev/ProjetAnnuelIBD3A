@@ -456,16 +456,28 @@ public class MainScript : MonoBehaviour
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
 
-			// On sélectionne 2 solutions au hasard parmis les reproducteurs (solutions conservées)
-			var sol1 = bests[Random.Range(0, bestCount)];
-			var sol2 = bests[Random.Range(0, bestCount)];
+			///Pour chaque enfant que l'on doit générer par croisement
+			for (int i = 0; i < popSize; i++)
+			{
+				///Récupération de deux reproduteurs au hasard
+				var parent1 = bests[Random.Range(0, bestCount)];
+				var parent2 = bests[Random.Range(0, bestCount)];
 
-			// On croise les solutions (cad on échange une action entre les deux)
-			var random = Random.Range(0,nbMoveInSolution);
-			var tmp = sol1.Actions[random];
-			sol1.Actions[random] = sol2.Actions[random];
-			sol2.Actions[random] = tmp;
+				///Création d'un individu à partir du croisement des deux parents
+				newPopulation[i] = Crossover(parent1, parent2);
+			}
 
+
+//			// On sélectionne 2 solutions au hasard parmis les reproducteurs (solutions conservées)
+//			var sol1 = bests[Random.Range(0, bestCount)];
+//			var sol2 = bests[Random.Range(0, bestCount)];
+//
+//			// On croise les solutions (cad on échange une action entre les deux)
+//			var random = Random.Range(0,nbMoveInSolution);
+//			var tmp = sol1.Actions[random];
+//			sol1.Actions[random] = sol2.Actions[random];
+//			sol2.Actions[random] = tmp;
+//
 		// MUTATION
 			for(var i = 0;i < bestCount; i++)
 			{
@@ -510,6 +522,112 @@ public class MainScript : MonoBehaviour
 		/// </summary>
 		public float Score { get; set; }
 	}
+
+	/// <summary>
+	/// Méthode proposant une méthode pour obtenir une nouvel
+	/// individu par croisement de deux configurations parentes
+	/// </summary>
+	/// <param name="parent1">Le parent 1</param>
+	/// <param name="parent2">Le parent 2</param>
+	/// <returns>L'enfant généré par croisement</returns>
+	PathSolutionScript Crossover(PathSolutionScript parent1, PathSolutionScript parent2)
+	{
+		///L'index pointant sur une position au sein des parents
+		int iParents = 0;
+
+		///Variable indiquant si l'on cherche à copier une position
+		///du parent1 ou du parent 2 dans l'enfant.
+		bool lookingAtParent1 = true;
+
+		///Initialisation de l'enfant.
+		var child = new PathSolutionScript(parent1.Actions.Length);
+
+		///Pour chaque position à remplir dans l'enfant.
+		for (int i = 0; i < child.Actions.Length; i++)
+		{
+			///Si l'on souhaite copier une position du premier parent
+			///dans l'enfant.
+			if (lookingAtParent1)
+			{
+				///Si la position du parent1 n'est pas déjà présente dans l'enfant.
+				if (child.Actions.All((pos) => !pos.Equals(parent1.Actions[iParents])))
+				{
+					///On copie la position courante du parent1 dans l'enfant.
+					child.Actions[i] = parent1.Actions[iParents];
+
+					///On précise qu'au tour du boucle suivant nous chercherons
+					///à copier une position provenant du deuxième parent.
+					lookingAtParent1 = false;
+				}
+				///Sinon, si la position du parent2 n'est pas présente dans l'enfant.
+				else if (child.Actions.All((pos) => !pos.Equals(parent2.Actions[iParents])))
+				{
+					///On copie la position du parent2 dans l'enfant.
+					child.Actions[i] = parent2.Actions[iParents];
+
+					///On précise qu'au tour du boucle suivant nous chercherons
+					///à copier une position provenant du premier parent.
+					lookingAtParent1 = true;
+				}
+				///Si les deux positions du parent1 et du parent2 sont déjà présentes
+				///dans l'enfant.
+				else
+				{
+					///On décrémente préventivement l'index de l'enfant.
+					i--;
+				}
+				///On incrémente l'index des parents
+				iParents++;
+
+				///Tout en vérifiant que l'on ne dépasse pas la taille du tableau
+				///des parents, si tel est le cas, on remet à zéro cet index.
+				if (iParents >= parent1.Actions.Length)
+					iParents = 0;
+			}
+			///Si l'on souhaite copier une position du parent2 en premier
+			else
+			{
+				///Si la position du parent2 n'est pas déjà présente dans l'enfant.
+				if (child.Actions.All((pos) => !pos.Equals(parent2.Actions[iParents])))
+				{
+					///On copie la position du parent2 dans l'enfant.
+					child.Actions[i] = parent2.Actions[iParents];
+
+					///On précise qu'au tour du boucle suivant nous chercherons
+					///à copier une position provenant du premier parent.
+					lookingAtParent1 = true;
+				}
+				///Sinon, si la position du parent1 n'est pas présente dans l'enfant.
+				else if (child.Actions.All((pos) => !pos.Equals(parent1.Actions[iParents])))
+				{
+					///On copie la position courante du parent1 dans l'enfant.
+					child.Actions[i] = parent1.Actions[iParents];
+
+					///On précise qu'au tour du boucle suivant nous chercherons
+					///à copier une position provenant du deuxième parent.
+					lookingAtParent1 = false;
+				}
+				///Si les deux positions du parent1 et du parent2 sont déjà présentes
+				///dans l'enfant.
+				else
+				{
+					///On décrémente préventivement l'index de l'enfant.
+					i--;
+				}
+				///On incrémente l'index des parents
+				iParents++;
+
+				///Tout en vérifiant que l'on ne dépasse pas la taille du tableau
+				///des parents, si tel est le cas, on remet à zéro cet index.
+				if (iParents >= parent1.Actions.Length)
+					iParents = 0;
+			}
+		}
+
+		///Une fois le croisement effectué, on renvoie l'enfant ainsi généré.
+		return child;
+	}
+
 
 	/// <summary>
 	/// Exemple d'erreur minimum (pas forcément toujours juste) renvoyant
@@ -582,11 +700,11 @@ public class MainScript : MonoBehaviour
 //			player.PerformedActionsNumber;
 
 		// Erreur prenant en compte les obstacles
-		var error = (Mathf.Abs(PlayerScript.GoalXPositionInMatrix - player.PlayerXPositionInMatrix)
-			+ Mathf.Abs(PlayerScript.GoalYPositionInMatrix - player.PlayerYPositionInMatrix))
-			* (player.FoundGoal ? 0 : 100) 
-			+ player.PerformedActionsNumber
-			+ (player.FoundObstacle ? 1000 : 0);
+		var error = (Mathf.Abs (PlayerScript.GoalXPositionInMatrix - player.PlayerXPositionInMatrix)
+		            + Mathf.Abs (PlayerScript.GoalYPositionInMatrix - player.PlayerYPositionInMatrix))
+		            * (player.FoundGoal ? 0 : 100)
+		            + player.PerformedActionsNumber;
+//			+ (player.FoundObstacle ? 1000 : 0);
 		
 //		Debug.Log("play.FoundGoal >" + player.FoundGoal + "<");
 
