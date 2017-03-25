@@ -367,41 +367,116 @@ public class MainScript : MonoBehaviour
 
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
+
+		///Initialisation de la valeur de 'stagnation' qui si elle dépasse un
+		///certain seuil provoquera l'augmentation de la température.
+		float stagnationInitial = 0.01f;	// 0.001f
+		float stagnation = stagnationInitial;
+		///Initialisation de la meilleure erreur obtenue à l'erreur initiale.
+		float bestError = currentError;
+
+//		// PREMIERE IMPLEMENTATION SANS SAUVEGARDE
+//		// Tout pendant que l'erreur minimale n'est pas atteinte
+//		while (iterations <= iterationsMax)
+//		{
+//			// On obtient une copie de la solution courante
+//			// pour ne pas la modifier dans le cas ou la modification
+//			// ne soit pas conservée.
+//			var newsolution = CopySolution(currentSolution);
+//
+//			// On procéde à une petite modification de la solution
+//			// courante.
+//			RandomChangeInSolution(newsolution);
+//
+//			// Récupére le score de la nouvelle solution
+//			// Sachant que l'évaluation peut nécessiter une 
+//			// simulation, pour pouvoir la visualiser nous
+//			// avons recours à une coroutine
+//			var newscoreEnumerator = GetError(newsolution);
+//			yield return StartCoroutine(newscoreEnumerator);
+//			float newError = newscoreEnumerator.Current;
+//
+//			// On affiche pour des raisons de Debug et de suivi
+//			// la comparaison entre l'erreur courante et la
+//			// nouvelle erreur
+//			float rdm =  Random.value; 
+//			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
+//			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
+//
+//			if (newError <= currentError || rdm < prob)
+//			{
+//				// On met à jour la solution courante
+//				currentSolution = newsolution;
+//
+//				// On met à jour l'erreur courante
+//				currentError = newError;
+//			}
+//
+//			// On incrémente le nombre d'itérations
+//			iterations++;
+//
+//			// On rend la main au moteur Unity3D
+//			yield return 0;
+//		}
+
+
+		// DEUXIEME IMPLEMENTATION AVEC SAUVEGARDE
 		// Tout pendant que l'erreur minimale n'est pas atteinte
-		while (iterations <= iterationsMax)
-		{
+		///Tout pendant que l'erreur n'est pas nulle (que les cubes ne sont pas alignés)
+		while (currentError > minimumError) {
 			// On obtient une copie de la solution courante
 			// pour ne pas la modifier dans le cas ou la modification
 			// ne soit pas conservée.
-			var newsolution = CopySolution(currentSolution);
+			var newsolution = CopySolution (currentSolution);
 
-			// On procéde à une petite modification de la solution
+			// On procède à une petite modification de la solution
 			// courante.
-			RandomChangeInSolution(newsolution);
+			RandomChangeInSolution (newsolution);
 
-			// Récupére le score de la nouvelle solution
+			// Récupère le score de la nouvelle solution
 			// Sachant que l'évaluation peut nécessiter une 
 			// simulation, pour pouvoir la visualiser nous
 			// avons recours à une coroutine
-			var newscoreEnumerator = GetError(newsolution);
-			yield return StartCoroutine(newscoreEnumerator);
+			var newscoreEnumerator = GetError (newsolution);
+			yield return StartCoroutine (newscoreEnumerator);
 			float newError = newscoreEnumerator.Current;
 
-			// On affiche pour des raisons de Debug et de suivi
-			// la comparaison entre l'erreur courante et la
-			// nouvelle erreur
-			float rdm =  Random.value; 
-			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
-			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
+			///Tirage d'un nombre aléatoire entre 0f et 1f.
+			float rdm = Random.Range (0f, 1f);
 
-			if (newError <= currentError || rdm < prob)
-			{
-				// On met à jour la solution courante
-				currentSolution = newsolution;
-
-				// On met à jour l'erreur courante
+			///Comparaison de ce nombre à la probabilité d'accepter un changement
+			///déterminée par le critère de Boltzman.
+			if (rdm < Prob ( currentError-newError, temp(iterations,iterationsMax))) {
+				///Si le nombre est inférieur, on accepte la permutation
+				///et l'on met à jour l'erreur courante.
 				currentError = newError;
+
+				///Met l'ancienne solution dans la solution courante.
+				currentSolution = newsolution;
 			}
+
+			///Si l'erreur stagne
+			if (bestError == currentError) {
+				///On incrémente la stagnation
+				stagnation *= 1.001f;
+			} else {
+				///Sinon on la réinitialise
+				stagnation = stagnationInitial;
+			}
+
+			///Si l'erreur diminue en deça de la meilleure erreur obtenue
+			if (currentError < bestError) {
+				///On met à jour la meilleure erreur obtenue
+				bestError = currentError;
+
+				///On réinitialise la stagnation
+				stagnation = stagnationInitial;
+			}
+
+			///Affichage dans la console de Debug du couple temperature stagnation
+			///pour pouvoir être témoin de l'augmentation de la température lorsque
+			///l'on se retrouve coincé trop longtemps dans un minimum local.
+			//Debug.Log(temperature + "  -  " + stagnation);
 
 			// On incrémente le nombre d'itérations
 			iterations++;
@@ -409,7 +484,6 @@ public class MainScript : MonoBehaviour
 			// On rend la main au moteur Unity3D
 			yield return 0;
 		}
-
 		// Fin de l'algorithme, on indique que son exécution est stoppée
 		_isRunning = false;
 
@@ -451,7 +525,7 @@ public class MainScript : MonoBehaviour
 		const int bestCount = (int)(popSize * bestPercentage);
 		const float mutationRate = 0.1f;
 
-		const int nbMoveInSolution = 5;
+		const int nbMoveInSolution = 20;
 		// INITIALISATION DE LA POPULATION
 	
 		PathSolutionScript[] population = new PathSolutionScript[popSize];
@@ -533,6 +607,7 @@ public class MainScript : MonoBehaviour
 			{
 				// On met à jour l'erreur courante
 				currentError = newError;
+				Debug.Log("Meilleure sol trouvée!!>" + currentError + "> - iterations >" + iterations + "<");	
 			}
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
