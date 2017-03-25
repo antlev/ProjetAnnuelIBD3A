@@ -172,7 +172,7 @@ public class DjikstraAlgorithm
             var orderedNodesInfos = nodesToExploreList.Values.OrderBy((kv) => kv.ComputedCost);
             var selectedNodeInfos = orderedNodesInfos.First();
 
-            // Condition de sortie 2 : si le noeud � explorer est le noeud d'arriver
+            // Condition de sortie 2 : si le noeud � explorer est le noeud d'arrivée
             if (selectedNodeInfos.CurrentNode == endNode)
             {
                 break;

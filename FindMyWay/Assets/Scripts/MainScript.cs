@@ -265,7 +265,61 @@ public class MainScript : MonoBehaviour
 	// Coroutine à utiliser pour implémenter l'algorithme d' A*
 	public IEnumerator AStar()
 	{
-		//TODO
+		// Récupération de l'environnement sous forme de matrice
+		var matrix = MatrixFromRaycast.CreateMatrixFromRayCast();
+
+		bool[][] booleanGrid = new bool[matrix.Length][];
+
+		// Conversion de la grille proposée par le probléme en grille booléenne (case vide / obstacle)
+		for (int i = 0; i < matrix.Length; i++)
+		{
+			booleanGrid[i] = new bool[matrix[i].Length];
+			for (int j = 0; j < matrix[i].Length; j++)
+			{
+				booleanGrid[i][j] = (matrix[i][j] == LayerMask.NameToLayer("Obstacle")) ? true : false;
+			}
+		}
+
+		// Récupération des positions de départ et d'arrivée
+		var startPosX = PlayerScript.StartXPositionInMatrix;
+		var startPosY = PlayerScript.StartYPositionInMatrix;
+		var endPosX = PlayerScript.GoalXPositionInMatrix;
+		var endPosY = PlayerScript.GoalYPositionInMatrix;
+
+		// Lancement de l'algorithme AStar
+		var path = AStarAlgo.RunOn2DGrid(booleanGrid, startPosX, startPosY, endPosX, endPosY);
+
+		// Si l'algorithme AStar n'a pas trouvé de chemin possible.
+		if (path == null || path.Count() < 1)
+		{
+			Debug.Log("NO SOLUTION FOUND");
+		}
+		else
+		{
+			var patharray = path.ToArray();
+
+			// Convertion du chemin trouvé en ensemble d'actions
+			var solution = new PathSolutionScript(patharray.Length - 1);
+			for (int i = 0; i < patharray.Length - 1; i++)
+			{
+				// Conversion d'un mouvement entre deux case en action
+				solution.Actions[i] =
+					new ActionSolutionScript()
+				{
+					Action = new Vector3(
+						(float)(patharray[i + 1].x - patharray[i].x),
+						0f,
+						(float)(patharray[i + 1].y - patharray[i].y)
+					)
+				};
+			}
+
+			// Simulation de la solution trouvée
+			var scoreEnumerator = GetError(solution);
+			yield return StartCoroutine(scoreEnumerator);
+			float currentError = scoreEnumerator.Current;
+			Debug.Log("currentError >" + currentError + "<");
+		}
 		yield return null;
 	}
 
@@ -429,7 +483,7 @@ public class MainScript : MonoBehaviour
 
 		while (true)
 		{
-			Debug.Log ("iterations>" + iterations + "<");
+//			Debug.Log ("iterations>" + iterations + "<");
 
 		// EVALUATION DE LA POPULATION
 
@@ -455,7 +509,7 @@ public class MainScript : MonoBehaviour
 					Score = error
 				};	
 						
-				Debug.Log("[" + iterations + "] solution n°" + solution + " error >" + error + "<");
+//				Debug.Log("[" + iterations + "] solution n°" + solution + " error >" + error + "<");
 
 			}
 
@@ -466,6 +520,20 @@ public class MainScript : MonoBehaviour
 				.Select((scoredindi2) => scoredindi2.Configuration)
 				.ToArray();
 
+			// Récupère le score de la solution initiale
+			// Sachant que l'évaluation peut nécessiter une 
+			// simulation, pour pouvoir la visualiser nous
+			// avons recours à une coroutine
+
+			var bestEnumerator = GetError(bests[0]);
+			yield return StartCoroutine(bestEnumerator);
+			float newError = bestEnumerator.Current;
+			// Si la solution a été améliorée
+			if (newError < currentError)
+			{
+				// On met à jour l'erreur courante
+				currentError = newError;
+			}
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
 
@@ -649,6 +717,23 @@ public class MainScript : MonoBehaviour
 		return child;
 	}
 
+	/// <summary>
+	/// Structure de donnée créée pour pouvoir stocker les 
+	/// résultats des test de nos algos
+	/// </summary>
+	class Results
+	{
+		/// <summary>
+		/// La configuration des (solution)
+		/// </summary>
+		public PathSolutionScript Configuration { get; set; }
+
+		/// <summary>
+		/// Le score de la configuration ci-dessus
+		/// </summary>
+		public float Score { get; set; }
+	}
+
 
 	/// <summary>
 	/// Exemple d'erreur minimum (pas forcément toujours juste) renvoyant
@@ -700,7 +785,6 @@ public class MainScript : MonoBehaviour
 
 		// Pour pouvoir visualiser la simulation (moins rapide)
 		player.RunWithoutSimulation = true;
-
 		// On lance la simulation en spécifiant
 		// la séquence d'action à exécuter
 		player.LaunchSimulation(solution);
@@ -726,8 +810,11 @@ public class MainScript : MonoBehaviour
 		            * (player.FoundGoal ? 0 : 100)
 		            + player.PerformedActionsNumber;
 //			+ (player.FoundObstacle ? 1000 : 0);
+
+
+
 		
-//		Debug.Log("play.FoundGoal >" + player.FoundGoal + "<");
+//		Debug.Log("play.FoundGoal >" + player.FoundGoal + "< - FoundObstacle >" + player.FoundObstacle + "< nb cases exploré >" + player.ExploredPuts + "< actions exe >" + player.PerformedActionsNumber + "<" );
 
 		// Détruit  l'objet de la simulation
 		Destroy(player.gameObject);
