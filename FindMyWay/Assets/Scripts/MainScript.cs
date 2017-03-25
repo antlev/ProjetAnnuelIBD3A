@@ -399,23 +399,39 @@ public class MainScript : MonoBehaviour
 
 		const int nbMoveInSolution = 5;
 		// INITIALISATION DE LA POPULATION
+	
 		PathSolutionScript[] population = new PathSolutionScript[popSize];
+		// Génère une solution initile au hasard
+		var individuInitial = new PathSolutionScript(nbMoveInSolution);
 
+		// Pour chaque individu on stocke une soltion voisine
 		for(var i = 0; i < popSize; i++)
 		{
-			population[i] = new PathSolutionScript(nbMoveInSolution);
+			// On copie la solution initiale
+			var newsolution = CopySolution(individuInitial);
+			// On procède à une petite modification de la solution
+			// courante.
+			RandomChangeInSolution(newsolution);	
+
+			// On stocke la nouvelle solution
+			population[i] = newsolution;
 		}
 
-		int iterations = 0;
+		// Récupération du score de la poputlation intiale pour les résultats
+		var errorEnumerator = GetError(population[0]);
+		yield return StartCoroutine(errorEnumerator);
+		float currentError = errorEnumerator.Current;
+
+		// Erreur Minimum
+
+		// Ajout aux résultats
+		int iterations = 1;
 
 		while (true)
 		{
 			Debug.Log ("iterations>" + iterations + "<");
-			++iterations;
 
 		// EVALUATION DE LA POPULATION
-			var scoreEnumerator = new IEnumerator<float>[popSize];		
-//			var scoredPopulation = new Dictionary<PathSolutionScript, IEnumerator<float>>();
 
 			///Initialisation du tableau destiné à contenir l'ensemble des
 			///couples configuration/score une fois la population évaluée
@@ -426,9 +442,9 @@ public class MainScript : MonoBehaviour
 			{
 				solution++;
 				// Récupére le score de chaque solution de la population
-				scoreEnumerator[i] = GetError(population [i]);
-				yield return StartCoroutine(scoreEnumerator[i]);
-				float error = scoreEnumerator[i].Current;
+				errorEnumerator = GetError(population[i]);
+				yield return StartCoroutine(errorEnumerator);
+				float error = errorEnumerator.Current;
 
 
 				///Création d'un couple configuration/solution et stockage
@@ -438,10 +454,7 @@ public class MainScript : MonoBehaviour
 					Configuration = population[i],
 					Score = error
 				};	
-
-//				scoredPopulation.Add(population[i], scoreEnumerator[i]);
-
-
+						
 				Debug.Log("[" + iterations + "] solution n°" + solution + " error >" + error + "<");
 
 			}
@@ -479,28 +492,36 @@ public class MainScript : MonoBehaviour
 //			sol2.Actions[random] = tmp;
 //
 		// MUTATION
-			for(var i = 0;i < bestCount; i++)
+			for(var i = 0;i < popSize; i++)
 			{
+				// On tire un nombre au hasard entre 0 et 1 et 
+				// s'il est inférieur au tauxx de mutation, on procède à la mutation
 				var rdm = Random.Range(0f, 1f);
 				if(rdm < mutationRate)
 				{
+
+					///Mutation proposée :
+					///Inversion de deux positions
 					var pos1 = Random.Range(0, nbMoveInSolution);
 					var pos2 = Random.Range(0, nbMoveInSolution);
 
-					var tmp2 = bests[i].Actions[pos1];
-					bests[i].Actions [pos1] = bests [i].Actions [pos2];
-					bests[i].Actions [pos2] = tmp2;
+					var tmp2 = newPopulation[i].Actions[pos1];
+					newPopulation[i].Actions [pos1] = newPopulation [i].Actions [pos2];
+					newPopulation[i].Actions [pos2] = tmp2;
+
+					// Modification d'une action dans la solution au hasard
+//					var pos = Random.Range(0, newpopulation[i].Actions.Length);
+//					newpopulation[i].Actions[pos] = new ActionSolutionScript();
 				}
 			}
 
-			for (var i = 0; i < bestCount; i++) 
-			{
-				newPopulation[i] = bests [i];
-			}
-			for (var i = bestCount; i < popSize; i++)
-			{
-				newPopulation[i] = new PathSolutionScript (nbMoveInSolution);
-			}
+			///Remplacement de l'ancienne population par la nouvelle
+			population = newPopulation;
+
+			++iterations;
+
+			// Résultats
+
 		}
 		yield return null;
 	}
@@ -513,7 +534,7 @@ public class MainScript : MonoBehaviour
 	class ScoredIndividual
 	{
 		/// <summary>
-		/// La configuration des cubes (solution)
+		/// La configuration des (solution)
 		/// </summary>
 		public PathSolutionScript Configuration { get; set; }
 
