@@ -412,6 +412,7 @@ public class MainScript : MonoBehaviour
 				// Si la solution est meilleure on met à jour la meilleure solution
 				if (newError <= bestError) {
 					bestError = newError;
+
 				}
 
 			}
@@ -573,7 +574,7 @@ public class MainScript : MonoBehaviour
 		// 1) ARRETER L'ALGO AVEC L'ERREUR MINIMUM
 		//var minError = GetMinError();
 		// 2) RECHERCHE CONTINUELLEMENT UNE MEILLEURE SOLUTION
-		var minError = 0;
+		//var minError = 0;
 		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
 		// Nombre max d'itérations  
 		//-------------------------------------------------
@@ -663,9 +664,6 @@ public class MainScript : MonoBehaviour
 				currentError = newError;
 				Debug.Log("Meilleure solution trouvée !>" + currentError + "> - iterations >" + iterations + "<");	
 
-				var bestEnumerator2 = GetError(bests[0]);
-				yield return StartCoroutine(bestEnumerator);
-				float newError2 = bestEnumerator.Current;
 			}
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
