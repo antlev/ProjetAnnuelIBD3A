@@ -123,7 +123,7 @@ public class MainScript : MonoBehaviour
 
 		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
 		// Nombre max d'itérations  
-		const int iterationsMax = 10000;
+		const int iterationsMax = 100;
 		//-------------------------------------------------
 			
 		// Génére une solution initiale au hazard (ici une séquence
@@ -703,16 +703,11 @@ public class MainScript : MonoBehaviour
 					/// 2 Mutations proposées :
 					/// 
 					///Inversion de deux positions
-//					var pos1 = Random.Range(0, nbMoveInSolution);
-//					var pos2 = Random.Range(0, nbMoveInSolution);
-//
-//					var tmp2 = newPopulation[i].Actions[pos1];
-//					newPopulation[i].Actions [pos1] = newPopulation [i].Actions [pos2];
-//					newPopulation[i].Actions [pos2] = tmp2;
+					SwapActionsInSolution(newPopulation[i]);
 
 					// Modification d'une action dans la solution au hasard
-					var pos = Random.Range(0, newPopulation[i].Actions.Length);
-					newPopulation[i].Actions[pos] = new ActionSolutionScript();
+					RandomChangeInSolution(newPopulation[i]);
+
 				}
 			}
 
@@ -948,6 +943,20 @@ public class MainScript : MonoBehaviour
 	public void RandomChangeInSolution(PathSolutionScript sol)
 	{
 		sol.Actions[Random.Range(0, sol.Actions.Length)] = new ActionSolutionScript();
+	}
+
+	/// <summary>
+	///	Inverse deux actions dans la solution au hasard
+	/// </summary>
+	/// <param name="sol"></param>
+	public void SwapActionsInSolution(PathSolutionScript sol, int nbMoveInSolution)
+	{
+		
+		var pos1 = Random.Range (0, nbMoveInSolution);
+		var pos2 = Random.Range (0, nbMoveInSolution);
+		var tmp = sol.Actions[pos1];
+		sol.Actions [pos1] = sol.Actions [pos2];
+		sol.Actions [pos2] = tmp;
 	}
 
 	/// <summary>
