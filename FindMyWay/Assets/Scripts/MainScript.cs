@@ -108,7 +108,7 @@ public class MainScript : MonoBehaviour
 		//-------------------------------------------------
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
-		const int nbMoveInSol = 25;
+		const int nbMoveInSolution = 25;
 		//-------------------------------------------------
 		// Nous récupérons l'erreur minimum atteignable
 		// Ceci est optionnel et dépendant de la fonction
@@ -127,8 +127,8 @@ public class MainScript : MonoBehaviour
 		//-------------------------------------------------
 			
 		// Génére une solution initiale au hazard (ici une séquence
-		// de nbMoveInSol mouvements)
-		var currentSolution = new PathSolutionScript(nbMoveInSol);
+		// de nbMoveInSolution mouvements)
+		var currentSolution = new PathSolutionScript(nbMoveInSolution);
 
 		// Récupére le score de la solution initiale
 		// Sachant que l'évaluation peut nécessiter une 
@@ -155,6 +155,10 @@ public class MainScript : MonoBehaviour
 			// On procéde à une petite modification de la solution
 			// courante.
 			RandomChangeInSolution(newsolution);
+
+			// Deuxième possibilité
+			///Inversion de deux positions
+//			SwapActionsInSolution(newsolution, nbMoveInSolution);
 
 			// Récupére le score de la nouvelle solution
 			// Sachant que l'évaluation peut nécessiter une 
@@ -322,7 +326,7 @@ public class MainScript : MonoBehaviour
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
 		// Nombre de mouvement contenu dans NotificationServices solutions
-		const int nbSolutionMoves = 10;
+		const int nbMoveInSolution = 10;
 		// Initialisation du nombre d'itérations maximum
 		const int iterationsMax = 1000;
 		// Pour la deuxième implémentation
@@ -347,7 +351,7 @@ public class MainScript : MonoBehaviour
 
 		// Génére une solution initiale au hazard (ici une séquence
 		// de nbSolutionMovesmouvements)
-		var currentSolution = new PathSolutionScript(nbSolutionMoves);
+		var currentSolution = new PathSolutionScript(nbMoveInSolution);
 
 		// Récupére le score de la solution initiale
 		// Sachant que l'évaluation peut nécessiter une 
@@ -379,6 +383,9 @@ public class MainScript : MonoBehaviour
 			// On procéde à une petite modification de la solution
 			// courante.
 			RandomChangeInSolution(newsolution);
+			// Deuxième possibilité
+			///Inversion de deux positions
+//			SwapActionsInSolution(newsolution, nbMoveInSolution);
 
 			// Récupére le score de la nouvelle solution
 			// Sachant que l'évaluation peut nécessiter une 
@@ -442,6 +449,9 @@ public class MainScript : MonoBehaviour
 //			// On procède à une petite modification de la solution
 //			// courante.
 //			RandomChangeInSolution (newsolution);
+//			// Deuxième possibilité
+//			///Inversion de deux positions
+//			//SwapActionsInSolution(newsolution, nbMoveInSolution);
 //
 //			// Récupère le score de la nouvelle solution
 //			// Sachant que l'évaluation peut nécessiter une 
@@ -595,7 +605,11 @@ public class MainScript : MonoBehaviour
 			var newsolution = CopySolution(individuInitial);
 			// On procède à une petite modification de la solution
 			// courante.
-			RandomChangeInSolution(newsolution);	
+			RandomChangeInSolution(newsolution);
+
+			// Deuxième possibilité
+			///Inversion de deux positions
+//			SwapActionsInSolution(newsolution, nbMoveInSolution);
 
 			// On stocke la nouvelle solution
 			population[i] = newsolution;
@@ -703,7 +717,7 @@ public class MainScript : MonoBehaviour
 					/// 2 Mutations proposées :
 					/// 
 					///Inversion de deux positions
-					SwapActionsInSolution(newPopulation[i]);
+					// SwapActionsInSolution(newPopulation[i], nbMoveInSolution);
 
 					// Modification d'une action dans la solution au hasard
 					RandomChangeInSolution(newPopulation[i]);
