@@ -11,7 +11,6 @@ using System.Threading;
 /// </summary>
 public class MainScript : MonoBehaviour
 {
-
 	/// <summary>
 	/// Indique si un algorithme est en cours d'exécution
 	/// </summary>
@@ -28,7 +27,6 @@ public class MainScript : MonoBehaviour
 	/// </summary>
 	public void OnGUI()
 	{
-
 		// Démarrage d'une liste de composants visuels verticale
 		GUILayout.BeginVertical();
 
@@ -42,7 +40,6 @@ public class MainScript : MonoBehaviour
 				StartCoroutine("NaiveLocalSearch");
 			}
 		}
-
 		// Affiche un bouton permettant le lancement de la recherche locale naéve
 		if (GUILayout.Button("DEMARRAGE RECUIT SIMULE"))
 		{
@@ -53,16 +50,12 @@ public class MainScript : MonoBehaviour
 				StartCoroutine("SimulatedAnnealing");
 			}
 		}
-
 		// Affiche un bouton permettant le lancement de l'algorithme génétique
 		if (GUILayout.Button("DEMARRAGE ALGORITHME GENETIQUE"))
 		{
-			Debug.Log ("test");
 			// Le bouton est inactif si un algorithme est en cours d'exécution
 			if (!_isRunning)
 			{
-				Debug.Log ("test2");
-
 				// Démarrage de l'algorithme génétique en pseudo asynchrone
 				StartCoroutine("GeneticAlgorithm");
 			}
@@ -89,7 +82,6 @@ public class MainScript : MonoBehaviour
 				StartCoroutine("AStar");
 			}
 		}
-
 		// Fin de la liste de composants visuels verticale
 		GUILayout.EndVertical();
 	}
@@ -105,7 +97,7 @@ public class MainScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Implémentation possible de la recherche locale naéve
+	/// Implémentation possible de la recherche locale naive
 	/// sous forme de coroutine pour le mode pseudo asynchone
 	/// </summary>
 	/// <returns></returns>
@@ -113,7 +105,6 @@ public class MainScript : MonoBehaviour
 	{
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
-
 		//-------------------------------------------------
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
@@ -122,16 +113,21 @@ public class MainScript : MonoBehaviour
 		// Nous récupérons l'erreur minimum atteignable
 		// Ceci est optionnel et dépendant de la fonction
 		// d'erreur
-		// valable uniquement pour les problèmes sans barrières
-		var minError = GetMinError();
-		// Recherche continuellement d'une meilleure solution
-		// var minError = 0;
+		// valable uniquement pour les problèmes sans obstacles
+
+		// 1) ARRETER L'ALGO AVEC L'ERREUR MINIMUM
+		//var minError = GetMinError();
+
+		// 2) RECHERCHE CONTINUELLEMENT UNE MEILLEURE SOLUTION
+		var minError = 0;
+
+		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
+		// Nombre max d'itérations  
 		const int iterationsMax = 10000;
 		//-------------------------------------------------
-
-	
+			
 		// Génére une solution initiale au hazard (ici une séquence
-		// de 42 mouvements)
+		// de nbMoveInSol mouvements)
 		var currentSolution = new PathSolutionScript(nbMoveInSol);
 
 		// Récupére le score de la solution initiale
@@ -142,12 +138,8 @@ public class MainScript : MonoBehaviour
 		yield return StartCoroutine(scoreEnumerator);
 		float currentError = scoreEnumerator.Current;
 
-
-		var minimumError = 0;
 		// Affichage de l'erreur initiale
-		Debug.Log("start currentError >" + currentError + "< - minimumError >" + minimumError + "<");
-		logResults("Results for NaiveLocalSearch -- number of moves in solution : " );
-		logResults ("start currentError >" + currentError + " - minimumError >" + minimumError + "<");
+		Debug.Log("Lancement de l'algo recherche locale naive : currentError >" + currentError + "< - minimumError >" + minError + "<");
 
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
@@ -172,9 +164,7 @@ public class MainScript : MonoBehaviour
 			yield return StartCoroutine(newscoreEnumerator);
 			float newError = newscoreEnumerator.Current;
 
-			// On affiche pour des raisons de Debug et de suivi
-			// la comparaison entre l'erreur courante et la
-			// nouvelle erreur
+			// On affiche l'erreur actuelle , la nouvelle erreur et si on change de solution
 			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "<- change Solution >" + (newError <= currentError) + "<");
 
 			// Si la solution a été améliorée
@@ -231,13 +221,13 @@ public class MainScript : MonoBehaviour
 		// Si l'algorithme de Djikstra n'a pas trouvé de chemin possible.
 		if (path == null || path.Count() < 1)
 		{
-			Debug.Log("NO SOLUTION FOUND");
+			Debug.Log("Lancement de l'algo de Djikstra : Aucune solution trouvée");
 		}
 		else
 		{
 			var patharray = path.ToArray();
 
-			// Convertion du chemin trouvé en ensemble d'actions
+			// Conversion du chemin trouvé en ensemble d'actions
 			var solution = new PathSolutionScript(patharray.Length - 1);
 			for (int i = 0; i < patharray.Length - 1; i++)
 			{
@@ -257,7 +247,7 @@ public class MainScript : MonoBehaviour
 			var scoreEnumerator = GetError(solution);
 			yield return StartCoroutine(scoreEnumerator);
 			float currentError = scoreEnumerator.Current;
-			Debug.Log("currentError >" + currentError + "<");
+			Debug.Log("Lancement de l'algo de Djikstra : Meilleure solution trouvée>" + currentError + "<");
 		}
 		yield return null;
 	}
@@ -292,13 +282,13 @@ public class MainScript : MonoBehaviour
 		// Si l'algorithme AStar n'a pas trouvé de chemin possible.
 		if (path == null || path.Count() < 1)
 		{
-			Debug.Log("NO SOLUTION FOUND");
+			Debug.Log("Lancement de l'algo AStar : Aucune solution trouvée");
 		}
 		else
 		{
 			var patharray = path.ToArray();
 
-			// Convertion du chemin trouvé en ensemble d'actions
+			// Conversion du chemin trouvé en ensemble d'actions
 			var solution = new PathSolutionScript(patharray.Length - 1);
 			for (int i = 0; i < patharray.Length - 1; i++)
 			{
@@ -318,7 +308,7 @@ public class MainScript : MonoBehaviour
 			var scoreEnumerator = GetError(solution);
 			yield return StartCoroutine(scoreEnumerator);
 			float currentError = scoreEnumerator.Current;
-			Debug.Log("currentError >" + currentError + "<");
+			Debug.Log("Lancement de l'algo AStar : Meilleure solution trouvée >" + currentError + "<");
 		}
 		yield return null;
 	}
@@ -332,22 +322,31 @@ public class MainScript : MonoBehaviour
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
 		// Nombre de mouvement contenu dans NotificationServices solutions
-		const int nbSolutionMoves = 42;
+		const int nbSolutionMoves = 10;
 		// Initialisation du nombre d'itérations maximum
 		const int iterationsMax = 1000;
+		// Pour la deuxième implémentation
+		const float temperatureInit = 1f;
 		//-------------------------------------------------
+		// prob() And temp() functions
+		//-------------------------------------------------
+		//--------------- CONDITION D'ARRET ---------------
 		// Nous récupérons l'erreur minimum atteignable
 		// Ceci est optionnel et dépendant de la fonction
 		// d'erreur
-		// valable uniquement pour les problèmes sans barrières
-		var minError = GetMinError();
-		// Recherche continuellement d'une meilleure solution
-		// var minError = 0;
-		// prob() And temp() functions
+		// 1) ARRETER L'ALGO AVEC L'ERREUR MINIMUM
+		//var minError = GetMinError();
+		// 2) RECHERCHE CONTINUELLEMENT UNE MEILLEURE SOLUTION
+		var minError = 0;
+		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
+		// Nombre max d'itérations  
 		//-------------------------------------------------
 
+		// Initialisation du nombre d'itérations
+		int iterations = 0;
+
 		// Génére une solution initiale au hazard (ici une séquence
-		// de 42 mouvements)
+		// de nbSolutionMovesmouvements)
 		var currentSolution = new PathSolutionScript(nbSolutionMoves);
 
 		// Récupére le score de la solution initiale
@@ -358,59 +357,140 @@ public class MainScript : MonoBehaviour
 		yield return StartCoroutine(scoreEnumerator);
 		float currentError = scoreEnumerator.Current;
 
-
-		int minimumError = 0;
-
-
-		// Affichage de l'erreur initiale
-		Debug.Log("start currentError >" + currentError + "< - minimumError >" + minimumError + "<");
-
-		// Initialisation du nombre d'itérations
-		int iterations = 0;
-
-		///Initialisation de la valeur de 'stagnation' qui si elle dépasse un
-		///certain seuil provoquera l'augmentation de la température.
-		float stagnationInitial = 0.01f;	// 0.001f
-		float stagnation = stagnationInitial;
-		///Initialisation de la meilleure erreur obtenue à l'erreur initiale.
+		// Initialisation de la meilleure erreur obtenue à l'erreur initiale.
+		// On garde en mémoire la meilleure solution obtenue
 		float bestError = currentError;
 
-//		// PREMIERE IMPLEMENTATION SANS SAUVEGARDE
-//		// Tout pendant que l'erreur minimale n'est pas atteinte
-//		while (iterations <= iterationsMax)
-//		{
+		// Affichage de l'erreur initiale
+		Debug.Log("Lancement de l'algo recuit simulé : currentError >" + currentError + "< - minimumError >" + minError + "<");
+
+		// --------------- PREMIERE IMPLEMENTATION ---------------
+		// On fait varier la température en fonction 
+		// du nombre d'itération et itérations max
+
+		// La condition d'arret est le nombre d'itérations max
+		while (iterations <= iterationsMax)
+		{
+			// On obtient une copie de la solution courante
+			// pour ne pas la modifier dans le cas ou la modification
+			// ne soit pas conservée.
+			var newsolution = CopySolution(currentSolution);
+
+			// On procéde à une petite modification de la solution
+			// courante.
+			RandomChangeInSolution(newsolution);
+
+			// Récupére le score de la nouvelle solution
+			// Sachant que l'évaluation peut nécessiter une 
+			// simulation, pour pouvoir la visualiser nous
+			// avons recours à une coroutine
+			var newscoreEnumerator = GetError(newsolution);
+			yield return StartCoroutine(newscoreEnumerator);
+			float newError = newscoreEnumerator.Current;
+
+			// On affiche pour des raisons de Debug et de suivi
+			// la comparaison entre l'erreur courante et la
+			// nouvelle erreur
+			//Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
+
+			// Tirage d'un nombre aléatoire entre 0 et 1
+			float rdm = Random.Range (0f, 1f);
+
+			// La fonction Prob() dépendant de la différence d'erreur entre 
+			// l'erreur courrante et la nouvelle erreur ainsi que la température
+			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
+
+			// Si la solution est meilleure
+			// ou dans certain cas si la valeur aléatoire générée 
+			// est inférieure à la variable renvoyé par la fonction prob
+			if (newError <= currentError || rdm < prob)
+			{
+				// On met à jour la solution courante
+				currentSolution = newsolution;
+				// On met à jour l'erreur courante
+				currentError = newError;
+				// Si la solution est meilleure on met à jour la meilleure solution
+				if (newError <= bestError) {
+					bestError = newError;
+				}
+
+			}
+			// On incrémente le nombre d'itérations
+			iterations++;
+
+			// On rend la main au moteur Unity3D
+			yield return 0;
+		}
+
+//		// --------------- DEUXIEME IMPLEMENTATION ---------------
+//		// On fait varier la température en fonction de la stagnation
+//
+//		// Initialisation de la valeur de 'stagnation' qui si elle dépasse un
+//		// certain seuil provoquera l'augmentation de la température.
+//		float stagnationInitial = 0.01f;	// 0.001f
+//		float stagnation = stagnationInitial;
+//		// Initialisation de la température
+//		float temperature = temperatureInit;
+//		// Tant que l'erreur minimum n'est pas atteinte
+//		while (currentError > minError) {
 //			// On obtient une copie de la solution courante
 //			// pour ne pas la modifier dans le cas ou la modification
 //			// ne soit pas conservée.
-//			var newsolution = CopySolution(currentSolution);
+//			var newsolution = CopySolution (currentSolution);
 //
-//			// On procéde à une petite modification de la solution
+//			// On procède à une petite modification de la solution
 //			// courante.
-//			RandomChangeInSolution(newsolution);
+//			RandomChangeInSolution (newsolution);
 //
-//			// Récupére le score de la nouvelle solution
+//			// Récupère le score de la nouvelle solution
 //			// Sachant que l'évaluation peut nécessiter une 
 //			// simulation, pour pouvoir la visualiser nous
 //			// avons recours à une coroutine
-//			var newscoreEnumerator = GetError(newsolution);
-//			yield return StartCoroutine(newscoreEnumerator);
+//			var newscoreEnumerator = GetError (newsolution);
+//			yield return StartCoroutine (newscoreEnumerator);
 //			float newError = newscoreEnumerator.Current;
 //
-//			// On affiche pour des raisons de Debug et de suivi
-//			// la comparaison entre l'erreur courante et la
-//			// nouvelle erreur
-//			float rdm =  Random.value; 
-//			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
-//			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
+//			// Tirage d'un nombre aléatoire entre 0 et 1.
+//			float rdm = Random.Range (0f, 1f);
 //
-//			if (newError <= currentError || rdm < prob)
-//			{
-//				// On met à jour la solution courante
-//				currentSolution = newsolution;
+//			// Comparaison de ce nombre à la probabilité d'accepter un changement
+//			// déterminée par le critère de Boltzman.
+//			if (rdm < BoltzmanCriteria(temperature, currentError, newError)){
+//				
+//				Debug.Log ("Changement de solution ancienne>" + currentError + "< nouvelle >" + newError + ">");
 //
-//				// On met à jour l'erreur courante
+//				// Si le nombre est inférieur, on accepte la permutation
+//				// et l'on met à jour l'erreur courante.
 //				currentError = newError;
+//
+//				// Met l'ancienne solution dans la solution courante.
+//				currentSolution = newsolution;
 //			}
+//
+//			// Si l'erreur stagne
+//			if (bestError == currentError) {
+//				// On incrémente la stagnation
+//				stagnation *= 1.001f;
+//			} else {
+//				// Sinon on la réinitialise
+//				stagnation = stagnationInitial;
+//			}
+//			// Si l'erreur diminue, on met a jour la meilleure solution
+//			// et on reset la stagnation initiale
+//			if (currentError < bestError) {
+//				bestError = currentError;
+//				stagnation = stagnationInitial;
+//			}
+//
+//			// On met à jour la temperature à chaque tour de boucle :
+//			//  - si la stagnation est suffisante la temperature va augmenter
+//			//  - sinon la temperature décroit de manière géométrique
+//			temperature *= 0.998f + stagnation;
+//
+//			// Affichage dans la console de Debug du couple temperature stagnation
+//			// pour pouvoir être témoin de l'augmentation de la température lorsque
+//			// l'on se retrouve coincé trop longtemps dans un minimum local.
+//			//Debug.Log(temperature + "  -  " + stagnation);
 //
 //			// On incrémente le nombre d'itérations
 //			iterations++;
@@ -418,89 +498,25 @@ public class MainScript : MonoBehaviour
 //			// On rend la main au moteur Unity3D
 //			yield return 0;
 //		}
-
-
-		// DEUXIEME IMPLEMENTATION AVEC SAUVEGARDE
-		// Tout pendant que l'erreur minimale n'est pas atteinte
-		///Tout pendant que l'erreur n'est pas nulle (que les cubes ne sont pas alignés)
-		while (currentError > minimumError) {
-			// On obtient une copie de la solution courante
-			// pour ne pas la modifier dans le cas ou la modification
-			// ne soit pas conservée.
-			var newsolution = CopySolution (currentSolution);
-
-			// On procède à une petite modification de la solution
-			// courante.
-			RandomChangeInSolution (newsolution);
-
-			// Récupère le score de la nouvelle solution
-			// Sachant que l'évaluation peut nécessiter une 
-			// simulation, pour pouvoir la visualiser nous
-			// avons recours à une coroutine
-			var newscoreEnumerator = GetError (newsolution);
-			yield return StartCoroutine (newscoreEnumerator);
-			float newError = newscoreEnumerator.Current;
-
-			///Tirage d'un nombre aléatoire entre 0f et 1f.
-			float rdm = Random.Range (0f, 1f);
-
-			///Comparaison de ce nombre à la probabilité d'accepter un changement
-			///déterminée par le critère de Boltzman.
-			if (rdm < Prob ( currentError-newError, temp(iterations,iterationsMax))) {
-				///Si le nombre est inférieur, on accepte la permutation
-				///et l'on met à jour l'erreur courante.
-				currentError = newError;
-
-				///Met l'ancienne solution dans la solution courante.
-				currentSolution = newsolution;
-			}
-
-			///Si l'erreur stagne
-			if (bestError == currentError) {
-				///On incrémente la stagnation
-				stagnation *= 1.001f;
-			} else {
-				///Sinon on la réinitialise
-				stagnation = stagnationInitial;
-			}
-
-			///Si l'erreur diminue en deça de la meilleure erreur obtenue
-			if (currentError < bestError) {
-				///On met à jour la meilleure erreur obtenue
-				bestError = currentError;
-
-				///On réinitialise la stagnation
-				stagnation = stagnationInitial;
-			}
-
-			///Affichage dans la console de Debug du couple temperature stagnation
-			///pour pouvoir être témoin de l'augmentation de la température lorsque
-			///l'on se retrouve coincé trop longtemps dans un minimum local.
-			//Debug.Log(temperature + "  -  " + stagnation);
-
-			// On incrémente le nombre d'itérations
-			iterations++;
-
-			// On rend la main au moteur Unity3D
-			yield return 0;
-		}
 		// Fin de l'algorithme, on indique que son exécution est stoppée
 		_isRunning = false;
 
-		if (currentError <= minimumError) {
+		if (bestError <= minError) {
 			// On affiche le nombre d'itérations nécessaire à l'algorithme pour trouver la solution
-			Debug.Log ("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - error >" + currentError + "< - iterationsMax >" + iterationsMax + "<");
+			Debug.Log ("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - bestError >" + bestError + "< - iterationsMax >" + iterationsMax + "<");
 		} else {
-			Debug.Log ("Sorry. no solution found - best solution : iterations >" + iterations + "< - error >" + currentError + "< - minimumError >" + minimumError + "<");
+			Debug.Log ("Sorry. no solution found - best solution : iterations >" + iterations + "< - bestError >" + bestError + "< - minimumError >" + minError + "<");
 		}
 	}
-	//Fonction de probabilité
-	//Renvoie un entier entre 0 et 1
-	//Plus l'entier renvoyé est proche de 0, moins l'exploration sera permise 
+	// Fonction de probabilité
+	// Renvoie un entier entre 0 et 1
+	// Plus l'entier renvoyé est proche de 0, moins l'exploration sera permise 
 	private float Prob(float diffError, float temperature){
 		return (float)Mathf.Exp (-diffError / temperature);
 	}
-
+	// Fonction de température
+	// définit la température en fonction
+	// du nombre d'itération et du nombre d'itérations max
 	private float temp(int iterations, int iterationsMax){
 		if (iterationsMax > iterations) {
 			return 0;
@@ -510,29 +526,68 @@ public class MainScript : MonoBehaviour
 			//Variations exponentielles
 			return (float)Mathf.Exp(iterationsMax-iterations);
 		}
+	}
+//	<summary>
+//	Proposition d'implémentation du critère de Bolztman représentant une
+//	fonction seuil, renvoyant la probabilité d'accepter une permutation
+//	selon la différence entre l'erreur courante et la nouvelle erreur et
+//	ainsi qu'en fonction de la temperature courante.
+//	</summary>
+//  <param name="temperature"></param>
+//  <param name="currentError"></param>
+//	<param name="newError"></param>
+//	<returns></returns>
+	float BoltzmanCriteria(float temperature, float currentError, float newError)
+	{
+		///Si la temperature est nulle
+		///cas particulier pour éviter une division par zéro
+		if (temperature == 0)
+		{
+			return currentError - newError;
+		}
 
+		///Critère de Boltzman
+		return Mathf.Exp(((float)(currentError - newError)) / temperature);
 	}
 
 	// Coroutine à utiliser pour implémenter un algorithme génétique
 	public IEnumerator GeneticAlgorithm()
 	{
+		//-------------------------------------------------
+		//------------------ PARAMETRES -------------------
+		//-------------------------------------------------
+		// Nombre d'individus dans la population
+		const int popSize = 10;
+		// Meilleure pourcentage à selectionner
+		const float bestPercentage = 0.35f;
+		// Taux de mutation
+		const float mutationRate = 0.1f;
+		// Nombre d'actions pour la solution de chaque individu
+		const int nbMoveInSolution = 20;
+		//-------------------------------------------------
+		const int bestCount = (int)(popSize * bestPercentage);
+		//--------------- CONDITION D'ARRET ---------------
+		// Nous récupérons l'erreur minimum atteignable
+		// Ceci est optionnel et dépendant de la fonction
+		// d'erreur
+		// 1) ARRETER L'ALGO AVEC L'ERREUR MINIMUM
+		//var minError = GetMinError();
+		// 2) RECHERCHE CONTINUELLEMENT UNE MEILLEURE SOLUTION
+		var minError = 0;
+		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
+		// Nombre max d'itérations  
+		//-------------------------------------------------
 
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 
-		const int popSize = 20;
-		const float bestPercentage = 0.35f;
-		const int bestCount = (int)(popSize * bestPercentage);
-		const float mutationRate = 0.1f;
-
-		const int nbMoveInSolution = 20;
 		// INITIALISATION DE LA POPULATION
 	
 		PathSolutionScript[] population = new PathSolutionScript[popSize];
-		// Génère une solution initile au hasard
+		// Génère une solution initiale au hasard
 		var individuInitial = new PathSolutionScript(nbMoveInSolution);
 
-		// Pour chaque individu on stocke une soltion voisine
+		// Pour chaque individu on stocke une solution voisine
 		for(var i = 0; i < popSize; i++)
 		{
 			// On copie la solution initiale
@@ -545,19 +600,18 @@ public class MainScript : MonoBehaviour
 			population[i] = newsolution;
 		}
 
-		// Récupération du score de la poputlation intiale pour les résultats
+		// Récupération du score de la poputlation intiale
 		var errorEnumerator = GetError(population[0]);
 		yield return StartCoroutine(errorEnumerator);
 		float currentError = errorEnumerator.Current;
 
-		// Erreur Minimum
+		Debug.Log ("Lancement de l'algo génétique : popSize>"+popSize+"< - bestPercentage>"+bestPercentage+"< - mutationRate"+ mutationRate+"< --Solution initiale >" + currentError + "<");
 
-		// Ajout aux résultats
 		int iterations = 1;
 
 		while (true)
+//		while (currentError <= minError)
 		{
-//			Debug.Log ("iterations>" + iterations + "<");
 
 		// EVALUATION DE LA POPULATION
 
@@ -607,7 +661,11 @@ public class MainScript : MonoBehaviour
 			{
 				// On met à jour l'erreur courante
 				currentError = newError;
-				Debug.Log("Meilleure sol trouvée!!>" + currentError + "> - iterations >" + iterations + "<");	
+				Debug.Log("Meilleure solution trouvée !>" + currentError + "> - iterations >" + iterations + "<");	
+
+				var bestEnumerator2 = GetError(bests[0]);
+				yield return StartCoroutine(bestEnumerator);
+				float newError2 = bestEnumerator.Current;
 			}
 		// CROISEMENT DE LA POPULATION
 			PathSolutionScript[] newPopulation = new PathSolutionScript[popSize];
@@ -624,6 +682,7 @@ public class MainScript : MonoBehaviour
 			}
 
 
+			// première proposition abandonnée
 //			// On sélectionne 2 solutions au hasard parmis les reproducteurs (solutions conservées)
 //			var sol1 = bests[Random.Range(0, bestCount)];
 //			var sol2 = bests[Random.Range(0, bestCount)];
@@ -643,18 +702,19 @@ public class MainScript : MonoBehaviour
 				if(rdm < mutationRate)
 				{
 
-					///Mutation proposée :
+					/// 2 Mutations proposées :
+					/// 
 					///Inversion de deux positions
-					var pos1 = Random.Range(0, nbMoveInSolution);
-					var pos2 = Random.Range(0, nbMoveInSolution);
-
-					var tmp2 = newPopulation[i].Actions[pos1];
-					newPopulation[i].Actions [pos1] = newPopulation [i].Actions [pos2];
-					newPopulation[i].Actions [pos2] = tmp2;
+//					var pos1 = Random.Range(0, nbMoveInSolution);
+//					var pos2 = Random.Range(0, nbMoveInSolution);
+//
+//					var tmp2 = newPopulation[i].Actions[pos1];
+//					newPopulation[i].Actions [pos1] = newPopulation [i].Actions [pos2];
+//					newPopulation[i].Actions [pos2] = tmp2;
 
 					// Modification d'une action dans la solution au hasard
-//					var pos = Random.Range(0, newpopulation[i].Actions.Length);
-//					newpopulation[i].Actions[pos] = new ActionSolutionScript();
+					var pos = Random.Range(0, newPopulation[i].Actions.Length);
+					newPopulation[i].Actions[pos] = new ActionSolutionScript();
 				}
 			}
 
@@ -662,8 +722,7 @@ public class MainScript : MonoBehaviour
 			population = newPopulation;
 
 			++iterations;
-
-			// Résultats
+//			Debug.Log ("iteration >" + iterations + "< bestSolution >" + currentError + "<");
 
 		}
 		yield return null;
@@ -677,7 +736,7 @@ public class MainScript : MonoBehaviour
 	class ScoredIndividual
 	{
 		/// <summary>
-		/// La configuration des (solution)
+		/// La configuration de la solution
 		/// </summary>
 		public PathSolutionScript Configuration { get; set; }
 
@@ -791,25 +850,6 @@ public class MainScript : MonoBehaviour
 		///Une fois le croisement effectué, on renvoie l'enfant ainsi généré.
 		return child;
 	}
-
-	/// <summary>
-	/// Structure de donnée créée pour pouvoir stocker les 
-	/// résultats des test de nos algos
-	/// </summary>
-	class Results
-	{
-		/// <summary>
-		/// La configuration des (solution)
-		/// </summary>
-		public PathSolutionScript Configuration { get; set; }
-
-		/// <summary>
-		/// Le score de la configuration ci-dessus
-		/// </summary>
-		public float Score { get; set; }
-	}
-
-
 	/// <summary>
 	/// Exemple d'erreur minimum (pas forcément toujours juste) renvoyant
 	/// la distance de manhattan entre la case d'arrivée et la case de départ.
@@ -871,6 +911,7 @@ public class MainScript : MonoBehaviour
 			yield return -1f;
 		}
 
+		// METHODE GENERATION ERREUR 1
 		// Calcule la distance de Manhattan entre la case d'arrivée et la case finale de
 		// notre objet, la pondére (la multiplie par zéro si le but a été trouvé) 
 		// et ajoute le nombre d'actions jouées
@@ -879,16 +920,15 @@ public class MainScript : MonoBehaviour
 //			* (player.FoundGoal ? 0 : 100) +
 //			player.PerformedActionsNumber;
 
+		// METHODE GENERATION ERREUR 2
 		// Erreur prenant en compte les obstacles
 		var error = (Mathf.Abs (PlayerScript.GoalXPositionInMatrix - player.PlayerXPositionInMatrix)
 		            + Mathf.Abs (PlayerScript.GoalYPositionInMatrix - player.PlayerYPositionInMatrix))
 		            * (player.FoundGoal ? 0 : 100)
 		            + player.PerformedActionsNumber;
-//			+ (player.FoundObstacle ? 1000 : 0);
+//					+ 200 / player.ExploredPuts
+//					+ (player.FoundObstacle ? 1000 : 0);
 
-
-
-		
 //		Debug.Log("play.FoundGoal >" + player.FoundGoal + "< - FoundObstacle >" + player.FoundObstacle + "< nb cases exploré >" + player.ExploredPuts + "< actions exe >" + player.PerformedActionsNumber + "<" );
 
 		// Détruit  l'objet de la simulation
@@ -934,342 +974,4 @@ public class MainScript : MonoBehaviour
 		// Renvoi de la solution copiée
 		return newSol;
 	}
-	public string getTempPath()
-	{
-		string path = System.Environment.GetEnvironmentVariable("TEMP");
-		if (!path.EndsWith("\\")) path += "\\";
-		return path;
-	}
-
-	public void logResults(string msg)
-	{
-		System.IO.StreamWriter sw = System.IO.File.AppendText(
-			getTempPath() + "projet_annuel.log");
-
-//		Debug.Log (sw.ToString);
-		try
-		{
-			string logLine = System.String.Format(
-				"{0:G}: {1}.", System.DateTime.Now, msg);
-			sw.WriteLine(logLine);
-		}
-		finally
-		{
-			sw.Close();
-		}
-	}
 }
-
-
-
-
-// CODE ALGO ETUDIE EN COURS
-
-//using UnityEngine;
-//using System.Collections;
-//using System.Collections.Generic;
-//using System.Linq;
-//
-//public class MainScript : MonoBehaviour {
-//	[SerializeField]
-//	private Transform[] cubes;
-//
-//	// Use this for initialization
-//	IEnumerator Start () {
-//		Debug.Log("ERREUR avant mélange : " + GetError(cubes));
-//		yield return StartCoroutine(Scramble(cubes));
-//		Debug.Log("ERREUR après mélange : " + GetError(cubes));
-//
-//		yield return new WaitForSeconds(2f);
-//
-//		//yield return StartCoroutine(NaiveLocalSearch(cubes));
-//		//yield return StartCoroutine(SimulatedAnnealing(cubes));
-//		yield return StartCoroutine(GeneticAlgorithm(cubes));
-//	}
-//
-//	public static void InstantScramble(Transform[] cubes)
-//	{
-//		for (var i = 0; i < cubes.Length; i++)
-//		{
-//			var rdm = Random.Range(i, cubes.Length);
-//			Swap(cubes[i], cubes[rdm]);
-//		}
-//	}
-//	static IEnumerator Scramble(Transform[] cubes)
-//	{
-//		for (var i = 0; i < cubes.Length; i++)
-//		{
-//			var rdm = Random.Range(i, cubes.Length);
-//			Swap(cubes[i], cubes[rdm]);
-//			yield return new WaitForEndOfFrame();
-//		}
-//	}
-//
-//	static void Swap(Transform cube1, Transform cube2)
-//	{
-//		var tmp = cube1.transform.position;
-//		cube1.transform.position = cube2.transform.position;
-//		cube2.transform.position = tmp;
-//	}
-//
-//	static int GetError(Transform[] cubes)
-//	{
-//		var error = 0;
-//
-//		foreach(var cube1 in cubes)
-//		{
-//			foreach(var cube2 in cubes)
-//			{
-//				if( cube1.tag == cube2.tag &&
-//					cube1.position.y != cube2.position.y)
-//				{
-//					++error;
-//				}
-//			}
-//		}
-//		return error;
-//	}
-//
-//	static IEnumerator NaiveLocalSearch(Transform[] cubes)
-//	{
-//		var currentEror = GetError(cubes);
-//
-//		while (currentEror != 0)
-//		{
-//			Transform cube1;
-//			Transform cube2;
-//
-//			do
-//			{
-//				cube1 = cubes[Random.Range(0, cubes.Length)];
-//				cube2 = cubes[Random.Range(0, cubes.Length)];
-//			} while (!AreNeighbours(cube1, cube2));
-//
-//			Swap(cube1, cube2);
-//
-//			var newError = GetError(cubes);
-//
-//			if (newError <= currentEror)
-//			{
-//				currentEror = newError;
-//			}
-//			else
-//			{
-//				Swap(cube1, cube2);
-//			}
-//			yield return new WaitForEndOfFrame();
-//
-//
-//		}
-//	}
-//	static IEnumerator SimulatedAnnealing(Transform[] cubes)
-//	{
-//		var currentEror = GetError(cubes);
-//		var temperature = 2f;
-//		var stagnation = 0f;
-//
-//		while (currentEror != 0)
-//		{
-//			var previousError = currentEror;
-//			Transform cube1;
-//			Transform cube2;
-//
-//			do
-//			{
-//				cube1 = cubes[Random.Range(0, cubes.Length)];
-//				cube2 = cubes[Random.Range(0, cubes.Length)];
-//			} while (!AreNeighbours(cube1, cube2));
-//
-//			Swap(cube1, cube2);
-//
-//			var newError = GetError(cubes);
-//			var rdm = Random.Range(0f, 1f);
-//
-//			if (rdm <= MetropolisRule(temperature, currentEror, newError))
-//			{
-//				currentEror = newError;
-//			}
-//			else
-//			{
-//				Swap(cube1, cube2);
-//			}
-//			if(previousError == currentEror)
-//			{
-//				stagnation++;
-//			}
-//			else
-//			{
-//				stagnation = 0;
-//			}
-//			if(stagnation > 1000)
-//			{
-//				temperature = 0f;
-//				stagnation = 0f;
-//			}
-//
-//			temperature -= 0.001f;
-//
-//			Debug.Log("Temperature = " + temperature + " | stagnation = " + stagnation);
-//			yield return new WaitForEndOfFrame();
-//
-//
-//		}
-//	}
-//	public static float MetropolisRule(float temperature, int currentError, int newError)
-//	{
-//		if(temperature <= 0)
-//		{
-//			return currentError - newError <= 0 ? 1f : 0f;
-//		}
-//		return Mathf.Exp((currentError - newError) / temperature);
-//	}
-//
-//	public static bool AreNeighbours(Transform cube1,Transform cube2)
-//	{
-//		// Cote à cote
-//		if(Mathf.Abs(cube1.position.x - cube2.position.x) == 2f && 
-//			cube1.position.y == cube2.position.y)
-//		{
-//			return true;
-//		}
-//
-//		// l'un au dessus de l'autre
-//		if (Mathf.Abs(cube1.position.y - cube2.position.y) == 2f &&
-//			cube1.position.x == cube2.position.x)
-//		{
-//			return true;
-//		}
-//		return false;
-//
-//
-//	}
-//
-//	public static IEnumerator GeneticAlgorithm(Transform[] cubes)
-//	{
-//		const int popSize = 200;
-//		const float bestPercentage = 0.2f;
-//		const int bestCount = (int)(popSize * bestPercentage);
-//		const float mutationRate = 0.1f;
-//		// INITIALISATION DE LA POPULATION
-//		var population = new Vector3[popSize][];
-//
-//		for(var i = 0; i < popSize; i++)
-//		{
-//			population[i] = new Vector3[cubes.Length];
-//			InstantScramble(cubes);
-//			for(var j = 0; j < cubes.Length; j++)
-//			{
-//				population[i][j] = cubes[j].position;
-//			}
-//		}
-//		while (true)
-//		{
-//			// EVALUATION DE LA POPULATION
-//			var scoredPopulation = new Dictionary<Vector3[], int>();
-//
-//			for(var i = 0; i < popSize; i++)
-//			{
-//				for(var j = 0; j < cubes.Length; j++)
-//				{
-//					cubes[j].position = population[i][j];
-//				}
-//				scoredPopulation.Add(population[i], GetError(cubes));
-//			}
-//
-//			// SELECTION DES REPRODUCTEURS
-//			var bests = scoredPopulation
-//				.OrderBy(kv => kv.Value)
-//				.Take(bestCount)
-//				.Select(kv => kv.Key)
-//				.ToArray();
-//
-//			for(var i = 0; i < cubes.Length; i++)
-//			{
-//				cubes[i].position = bests[0][i];
-//			}
-//
-//			if(GetError(cubes) == 0)
-//			{
-//				break;
-//			}
-//
-//			// CROISEMENT DE LA POPULATION
-//			var newPopulation = new Vector3[popSize][];
-//
-//			for(var i = 0; i < popSize; i++)
-//			{
-//				var p1 = bests[Random.Range(0, popSize)];
-//				var p2 = bests[Random.Range(0, popSize)];
-//			}
-//			// MUTATION
-//			for(var i = 0;i < popSize; i++)
-//			{
-//				var rdm = Random.Range(0f, 1f);
-//				if(rdm < mutationRate)
-//				{
-//					var pos1 = Random.Range(0, cubes.Length);
-//					var pos2 = Random.Range(0, cubes.Length);
-//
-//					var tmp = population[i][pos1];
-//					population[i][pos1] = population[i][pos2];
-//					population[i][pos2] = tmp;
-//				}
-//			}
-//
-//			population = newPopulation;
-//
-//			yield return null;
-//		}
-//	}
-//
-//	public static Vector3[] Crossover(Vector3[] p1,Vector3[] p2)
-//	{
-//		var child = new Vector3[p1.Length];
-//		for(var i = 0; i < child.Length;i++)
-//		{
-//			child[i] = new Vector3(-999999f, -999999f, -999999f);
-//		}
-//		var parentCnt = 0;
-//		var lookingAtP1 = true;
-//
-//		for(var i = 0; i < child.Length; i++)
-//		{
-//			if (lookingAtP1)
-//			{
-//				if (!child.Contains(p1[parentCnt]))
-//				{
-//					child[i] = p1[parentCnt];
-//				}
-//				else if(!child.Contains(p2[parentCnt]))
-//				{
-//					child[i] = p2[parentCnt];
-//				}
-//				else
-//				{
-//					i--;
-//				}
-//			}
-//			else
-//			{
-//				if (!child.Contains(p2[parentCnt]))
-//				{
-//					child[i] = p2[parentCnt];
-//				}
-//				else if (!child.Contains(p1[parentCnt]))
-//				{
-//					child[i] = p1[parentCnt];
-//				}
-//				else
-//				{
-//					i--;
-//				}
-//			}
-//			parentCnt++;
-//		}
-//		return child;
-//	}
-//
-//}
-
-
-
