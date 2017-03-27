@@ -429,6 +429,7 @@ public class MainScript : MonoBehaviour
 				// Si la solution est meilleure on met à jour la meilleure solution
 				if (newError <= bestError) {
 					bestError = newError;
+					Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"<");
 
 				}
 
@@ -500,7 +501,7 @@ public class MainScript : MonoBehaviour
 		float bestError = currentError;
 
 		// Affichage de l'erreur initiale
-		Debug.Log("Lancement de l'algo recuit simulé : currentError >" + currentError + "< - minimumError >" + minError + "<");
+		Debug.Log("Lancement de l'algo recuit simulé 2 : currentError >" + currentError + "< - minimumError >" + minError + "<");
 
 			// --------------- DEUXIEME IMPLEMENTATION ---------------
 			// On fait varier la température en fonction de la stagnation
@@ -563,6 +564,8 @@ public class MainScript : MonoBehaviour
 				if (currentError < bestError) {
 					bestError = currentError;
 					stagnation = stagnationInitial;
+				Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"<");
+
 				}
 	
 				// On met à jour la temperature à chaque tour de boucle :
