@@ -77,11 +77,12 @@ public class MainScript : MonoBehaviour
 		// Affiche un bouton permettant le lancement de l'algorithme de Djikstra
 		if (GUILayout.Button("DEMARRAGE DJIKSTRA"))
 		{
-			// Le bouton est inactif si un algorithme est en cours d'exécution
-			if (!_isRunning)
-			{
-				// Démarrage de l'algorithme de Djikstra en pseudo asynchrone
-				StartCoroutine("Djikstra");
+			for (int i = 0; i < 10; i++) {
+				// Le bouton est inactif si un algorithme est en cours d'exécution
+				if (!_isRunning) {
+					// Démarrage de l'algorithme de Djikstra en pseudo asynchrone
+					StartCoroutine ("Djikstra");
+				}
 			}
 		}
 
@@ -116,6 +117,9 @@ public class MainScript : MonoBehaviour
 	/// <returns></returns>
 	public IEnumerator NaiveLocalSearch()
 	{
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
+
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 		//-------------------------------------------------
@@ -157,9 +161,6 @@ public class MainScript : MonoBehaviour
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
-		// Permet de mesurer le temps
-		Stopwatch sw = Stopwatch.StartNew ();
-
 //		while (currentError != minError)
 		while (iterations < iterationsMax)
 		{
@@ -183,8 +184,6 @@ public class MainScript : MonoBehaviour
 			var newscoreEnumerator = GetError(newsolution);
 			yield return StartCoroutine(newscoreEnumerator);
 			float newError = newscoreEnumerator.Current;
-
-
 
 			// On affiche l'erreur actuelle , la nouvelle erreur et si on change de solution
 			UnityEngine.Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "<- change Solution >" + (newError <= currentError) + "< - time elapsed >"+sw.ElapsedMilliseconds+"< (ms)");
