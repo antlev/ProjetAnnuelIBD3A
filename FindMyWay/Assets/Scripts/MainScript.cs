@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Diagnostics;
+
 
 /// <summary>
 /// Classe principale à utiliser pour implémenter vos algorithmes
@@ -151,9 +153,14 @@ public class MainScript : MonoBehaviour
 		// Affichage de l'erreur initiale
 		Debug.Log("Lancement de l'algo recherche locale naive : currentError >" + currentError + "< - minimumError >" + minError + "<");
 
+		// Permet de mesurer le temps
+		DateTime date = DateTime.Now.Ticks;
+
+
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
+		sw.Start();
 //		while (currentError != minError)
 		while (iterations < iterationsMax)
 		{
@@ -1131,7 +1138,6 @@ public class MainScript : MonoBehaviour
 		return newSol;
 	}
 
-<<<<<<< HEAD
 	class Result{
 		int iteration;
 		float currentError;
@@ -1164,6 +1170,4 @@ public class MainScript : MonoBehaviour
 			sw.Close();
 		}
 	}
-=======
->>>>>>> b7be0b04bcef99e80ef6985d6b8d570e062761d1
 }
