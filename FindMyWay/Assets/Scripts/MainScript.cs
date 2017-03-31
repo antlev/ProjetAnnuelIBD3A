@@ -124,7 +124,7 @@ public class MainScript : MonoBehaviour
 		//-------------------------------------------------
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
-		const int nbMoveInSolution = 10;
+		const int nbMoveInSolution = 5;
 		//-------------------------------------------------
 		// Nous récupérons l'erreur minimum atteignable
 		// Ceci est optionnel et dépendant de la fonction
