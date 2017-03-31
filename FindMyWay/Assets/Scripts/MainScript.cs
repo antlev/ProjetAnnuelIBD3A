@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -151,16 +152,14 @@ public class MainScript : MonoBehaviour
 		float currentError = scoreEnumerator.Current;
 
 		// Affichage de l'erreur initiale
-		Debug.Log("Lancement de l'algo recherche locale naive : currentError >" + currentError + "< - minimumError >" + minError + "<");
-
-		// Permet de mesurer le temps
-		DateTime date = DateTime.Now.Ticks;
-
+		UnityEngine.Debug.Log("Lancement de l'algo recherche locale naive : currentError >" + currentError + "< - minimumError >" + minError + "<");
 
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
-		sw.Start();
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
+
 //		while (currentError != minError)
 		while (iterations < iterationsMax)
 		{
@@ -185,8 +184,10 @@ public class MainScript : MonoBehaviour
 			yield return StartCoroutine(newscoreEnumerator);
 			float newError = newscoreEnumerator.Current;
 
+
+
 			// On affiche l'erreur actuelle , la nouvelle erreur et si on change de solution
-			Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "<- change Solution >" + (newError <= currentError) + "<");
+			UnityEngine.Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "<- change Solution >" + (newError <= currentError) + "< - time elapsed >"+sw.ElapsedMilliseconds+"< (ms)");
 
 			// Si la solution a été améliorée
 			if (newError <= currentError)
@@ -204,17 +205,22 @@ public class MainScript : MonoBehaviour
 			// On rend la main au moteur Unity3D
 			yield return 0;
 		}
+		// On stop le chronomètre
+		sw.Stop();
 
 		// Fin de l'algorithme, on indique que son exécution est stoppée
 		_isRunning = false;
 
 		// On affiche le nombre d'itérations nécessaire à l'algorithme pour trouver la solution
-		Debug.Log("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - error >" + currentError + "<");
+		UnityEngine.Debug.Log("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - error >" + currentError + "< - Elapsed time >"+sw.ElapsedMilliseconds+"< (ms)");
 	}
 
 	// Coroutine à utiliser pour implémenter l'algorithme de Djikstra
 	public IEnumerator Djikstra()
 	{
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
+
 		// Récupération de l'environnement sous forme de matrice
 		var matrix = MatrixFromRaycast.CreateMatrixFromRayCast();
 
@@ -242,7 +248,7 @@ public class MainScript : MonoBehaviour
 		// Si l'algorithme de Djikstra n'a pas trouvé de chemin possible.
 		if (path == null || path.Count() < 1)
 		{
-			Debug.Log("Lancement de l'algo de Djikstra : Aucune solution trouvée");
+			UnityEngine.Debug.Log("Lancement de l'algo de Djikstra : Aucune solution trouvée - Temps d'éxecution >"+sw.ElapsedMilliseconds+"< (ms)");
 		}
 		else
 		{
@@ -268,14 +274,19 @@ public class MainScript : MonoBehaviour
 			var scoreEnumerator = GetError(solution);
 			yield return StartCoroutine(scoreEnumerator);
 			float currentError = scoreEnumerator.Current;
-			Debug.Log("Lancement de l'algo de Djikstra : Meilleure solution trouvée>" + currentError + "<");
+			UnityEngine.Debug.Log("Lancement de l'algo de Djikstra : Meilleure solution trouvée>" + currentError + "< - Temps d'éxecution >"+sw.ElapsedMilliseconds+"< (ms)");
 		}
+		// On stop le chronomètre
+		sw.Stop();
 		yield return null;
 	}
 
 	// Coroutine à utiliser pour implémenter l'algorithme d' A*
 	public IEnumerator AStar()
 	{
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
+
 		// Récupération de l'environnement sous forme de matrice
 		var matrix = MatrixFromRaycast.CreateMatrixFromRayCast();
 
@@ -303,7 +314,7 @@ public class MainScript : MonoBehaviour
 		// Si l'algorithme AStar n'a pas trouvé de chemin possible.
 		if (path == null || path.Count() < 1)
 		{
-			Debug.Log("Lancement de l'algo AStar : Aucune solution trouvée");
+			UnityEngine.Debug.Log("Lancement de l'algo AStar : Aucune solution trouvée - Temps d'éxecution >"+sw.ElapsedMilliseconds+"< (ms)");
 		}
 		else
 		{
@@ -329,14 +340,19 @@ public class MainScript : MonoBehaviour
 			var scoreEnumerator = GetError(solution);
 			yield return StartCoroutine(scoreEnumerator);
 			float currentError = scoreEnumerator.Current;
-			Debug.Log("Lancement de l'algo AStar : Meilleure solution trouvée >" + currentError + "<");
+			UnityEngine.Debug.Log("Lancement de l'algo AStar : Meilleure solution trouvée>" + currentError + "< - Temps d'éxecution >"+sw.ElapsedMilliseconds+"< (ms)");
 		}
+		// On stop le chronomètre
+		sw.Stop();
 		yield return null;
 	}
 
 	// Coroutine à utiliser pour implémenter l'algorithme du recuit simulé
 	public IEnumerator SimulatedAnnealing()
 	{
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
+
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 		//-------------------------------------------------
@@ -383,7 +399,7 @@ public class MainScript : MonoBehaviour
 		float bestError = currentError;
 
 		// Affichage de l'erreur initiale
-		Debug.Log("Lancement de l'algo recuit simulé : currentError >" + currentError + "< - minimumError >" + minError + "<");
+		UnityEngine.Debug.Log("Lancement de l'algo recuit simulé : currentError >" + currentError + "< - minimumError >" + minError + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
 		// --------------- PREMIERE IMPLEMENTATION ---------------
 		// On fait varier la température en fonction 
@@ -412,17 +428,18 @@ public class MainScript : MonoBehaviour
 			yield return StartCoroutine(newscoreEnumerator);
 			float newError = newscoreEnumerator.Current;
 
-			// On affiche pour des raisons de Debug et de suivi
-			// la comparaison entre l'erreur courante et la
-			// nouvelle erreur
-			//Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "<");
 
 			// Tirage d'un nombre aléatoire entre 0 et 1
-			float rdm = Random.Range (0f, 1f);
+			float rdm = UnityEngine.Random.Range (0f, 1f);
 
 			// La fonction Prob() dépendant de la différence d'erreur entre 
 			// l'erreur courrante et la nouvelle erreur ainsi que la température
 			float prob = Prob(newError - currentError ,temp(iterations,iterationsMax));
+
+			// On affiche pour des raisons de Debug et de suivi
+			// la comparaison entre l'erreur courante et la
+			// nouvelle erreur
+			UnityEngine.Debug.Log("[" + iterations + "] currentError >" + currentError + "< - newError >" + newError + "< - rdm >" + rdm.ToString() + "< - prob>" + "< - Solution change >" + (newError <= currentError || rdm < prob) + "< - iterationsMax >" + iterationsMax + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
 			// Si la solution est meilleure
 			// ou dans certain cas si la valeur aléatoire générée 
@@ -436,7 +453,7 @@ public class MainScript : MonoBehaviour
 				// Si la solution est meilleure on met à jour la meilleure solution
 				if (newError <= bestError) {
 					bestError = newError;
-					Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"<");
+					UnityEngine.Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
 				}
 
@@ -453,15 +470,20 @@ public class MainScript : MonoBehaviour
 
 		if (bestError <= minError) {
 			// On affiche le nombre d'itérations nécessaire à l'algorithme pour trouver la solution
-			Debug.Log ("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - bestError >" + bestError + "< - iterationsMax >" + iterationsMax + "<");
+			UnityEngine.Debug.Log ("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - bestError >" + bestError + "< - iterationsMax >" + iterationsMax + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 		} else {
-			Debug.Log ("Sorry. no solution found - best solution : iterations >" + iterations + "< - bestError >" + bestError + "< - minimumError >" + minError + "<");
+			UnityEngine.Debug.Log ("Sorry. no solution found - best solution : iterations >" + iterations + "< - bestError >" + bestError + "< - minimumError >" + minError + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 		}
+		// On stop le chronomètre
+		sw.Stop();
 	}
 
 	// Coroutine à utiliser pour implémenter l'algorithme du recuit simulé
 	public IEnumerator SimulatedAnnealing2()
 	{
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
+
 		// Indique que l'algorithme est en cours d'exécution
 		_isRunning = true;
 		//-------------------------------------------------
@@ -508,7 +530,7 @@ public class MainScript : MonoBehaviour
 		float bestError = currentError;
 
 		// Affichage de l'erreur initiale
-		Debug.Log("Lancement de l'algo recuit simulé 2 : currentError >" + currentError + "< - minimumError >" + minError + "<");
+		UnityEngine.Debug.Log("Lancement de l'algo recuit simulé 2 : currentError >" + currentError + "< - minimumError >" + minError + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
 			// --------------- DEUXIEME IMPLEMENTATION ---------------
 			// On fait varier la température en fonction de la stagnation
@@ -542,13 +564,13 @@ public class MainScript : MonoBehaviour
 				float newError = newscoreEnumerator.Current;
 	
 				// Tirage d'un nombre aléatoire entre 0 et 1.
-				float rdm = Random.Range (0f, 1f);
+				float rdm = UnityEngine.Random.Range (0f, 1f);
 	
 				// Comparaison de ce nombre à la probabilité d'accepter un changement
 				// déterminée par le critère de Boltzman.
 				if (rdm < BoltzmanCriteria(temperature, currentError, newError)){
 					
-					Debug.Log ("Changement de solution ancienne>" + currentError + "< nouvelle >" + newError + ">");
+				UnityEngine.Debug.Log ("Changement de solution ancienne>" + currentError + "< nouvelle >" + newError + "> - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 	
 					// Si le nombre est inférieur, on accepte la permutation
 					// et l'on met à jour l'erreur courante.
@@ -571,7 +593,7 @@ public class MainScript : MonoBehaviour
 				if (currentError < bestError) {
 					bestError = currentError;
 					stagnation = stagnationInitial;
-				Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"<");
+				UnityEngine.Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
 				}
 	
@@ -583,7 +605,7 @@ public class MainScript : MonoBehaviour
 				// Affichage dans la console de Debug du couple temperature stagnation
 				// pour pouvoir être témoin de l'augmentation de la température lorsque
 				// l'on se retrouve coincé trop longtemps dans un minimum local.
-				//Debug.Log(temperature + "  -  " + stagnation);
+				//UnityEngine.Debug.Log(temperature + "  -  " + stagnation);
 	
 				// On incrémente le nombre d'itérations
 				iterations++;
@@ -596,10 +618,12 @@ public class MainScript : MonoBehaviour
 
 	if (bestError <= minError) {
 		// On affiche le nombre d'itérations nécessaire à l'algorithme pour trouver la solution
-		Debug.Log ("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - bestError >" + bestError + "< - iterationsMax >" + iterationsMax + "<");
+			UnityEngine.Debug.Log ("CONGRATULATIONS !!! Solution Found : iterations >" + iterations + "< - bestError >" + bestError + "< - iterationsMax >" + iterationsMax + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 	} else {
-		Debug.Log ("Sorry. no solution found - best solution : iterations >" + iterations + "< - bestError >" + bestError + "< - minimumError >" + minError + "<");
+			UnityEngine.Debug.Log ("Sorry. no solution found - best solution : iterations >" + iterations + "< - bestError >" + bestError + "< - minimumError >" + minError + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 	}
+	// On stop le chronomètre
+	sw.Stop();
 }
 
 
@@ -649,6 +673,8 @@ public class MainScript : MonoBehaviour
 	// Coroutine à utiliser pour implémenter un algorithme génétique
 	public IEnumerator GeneticAlgorithm()
 	{
+		// Permet de mesurer le temps
+		Stopwatch sw = Stopwatch.StartNew ();
 		//-------------------------------------------------
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
@@ -748,7 +774,7 @@ public class MainScript : MonoBehaviour
 		// Récupération du score de la moins bonne solution
 		float initLastError = initOrderedScoredPopulation[popSize-1];
 
-		Debug.Log ("Lancement de l'algo génétique : popSize>"+popSize+"< - bestPercentage>"+bestPercentage+"< - mutationRate"+ mutationRate+"< --Meilleure solution >" +initBestError+ "< --Moins bonne solution >"+ initLastError +" --Erreur moyenne >"+initMeanError+"<");
+		UnityEngine.Debug.Log ("Lancement de l'algo génétique : popSize>"+popSize+"< - bestPercentage>"+bestPercentage+"< - mutationRate"+ mutationRate+"< --Meilleure solution >" +initBestError+ "< --Moins bonne solution >"+ initLastError +" --Erreur moyenne >"+initMeanError+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
 		int iterations = 1;
 
@@ -810,13 +836,13 @@ public class MainScript : MonoBehaviour
 			// Si la solution a été améliorée
 			if (newBestError < bestError) {
 				// On affiche le debug
-				Debug.Log ("!!!!! MEILLEURE SOLUTION TROUVEE !!!!!!>" + newBestError + "< (ancienne : "+bestError+") - iterations >" + iterations + "< - moins bonne solution >"+ newLastError+"< - Moyenne de la population >"+meanError+"<");	
+				UnityEngine.Debug.Log ("!!!!! MEILLEURE SOLUTION TROUVEE !!!!!!>" + newBestError + "< (ancienne : "+bestError+") - iterations >" + iterations + "< - moins bonne solution >"+ newLastError+"< - Moyenne de la population >"+meanError+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");	
 
 				// On met à jour l'erreur courante
 				bestError = newBestError;
 			} else {
 				// On affiche le debug
-				Debug.Log ("iterations >" + iterations + "< - Meilleure solution >" + bestError + "< - moins bonne solution >"+ newLastError+"< - Moyenne de la population >"+meanError+"<");	
+				UnityEngine.Debug.Log ("iterations >" + iterations + "< - Meilleure solution >" + bestError + "< - moins bonne solution >"+ newLastError+"< - Moyenne de la population >"+meanError+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");	
 			}
 
 		// CROISEMENT DE LA POPULATION
@@ -826,8 +852,8 @@ public class MainScript : MonoBehaviour
 			for (int i = 0; i < popSize; i++)
 			{
 				///Récupération de deux reproduteurs au hasard parmis les meilleurs sélectionnés
-				var parent1 = bests[Random.Range(0, bestCount)];
-				var parent2 = bests[Random.Range(0, bestCount)];
+				var parent1 = bests[UnityEngine.Random.Range(0, bestCount)];
+				var parent2 = bests[UnityEngine.Random.Range(0, bestCount)];
 
 				///Création d'un individu à partir du croisement des deux parents
 				newPopulation[i] = Crossover(parent1, parent2);
@@ -849,7 +875,7 @@ public class MainScript : MonoBehaviour
 			{
 				// On tire un nombre au hasard entre 0 et 1 et 
 				// s'il est inférieur au tauxx de mutation, on procède à la mutation
-				var rdm = Random.Range(0f, 1f);
+				var rdm = UnityEngine.Random.Range(0f, 1f);
 				if(rdm < mutationRate)
 				{
 
@@ -868,7 +894,7 @@ public class MainScript : MonoBehaviour
 			population = newPopulation;
 
 			++iterations;
-//			Debug.Log ("iteration >" + iterations + "< bestSolution >" + currentError + "<");
+//			UnityEngine.Debug.Log ("iteration >" + iterations + "< bestSolution >" + currentError + "<");
 
 		}
 		yield return null;
@@ -1075,7 +1101,7 @@ public class MainScript : MonoBehaviour
 //					+ 200 / player.ExploredPuts
 //					+ (player.FoundObstacle ? 1000 : 0);
 
-//		Debug.Log("play.FoundGoal >" + player.FoundGoal + "< - FoundObstacle >" + player.FoundObstacle + "< nb cases exploré >" + player.ExploredPuts + "< actions exe >" + player.PerformedActionsNumber + "<" );
+//		UnityEngine.Debug.Log("play.FoundGoal >" + player.FoundGoal + "< - FoundObstacle >" + player.FoundObstacle + "< nb cases exploré >" + player.ExploredPuts + "< actions exe >" + player.PerformedActionsNumber + "<" );
 
 		// Détruit  l'objet de la simulation
 		Destroy(player.gameObject);
@@ -1095,7 +1121,7 @@ public class MainScript : MonoBehaviour
 	/// <param name="sol"></param>
 	public void RandomChangeInSolution(PathSolutionScript sol)
 	{
-		sol.Actions[Random.Range(0, sol.Actions.Length)] = new ActionSolutionScript();
+		sol.Actions[UnityEngine.Random.Range(0, sol.Actions.Length)] = new ActionSolutionScript();
 	}
 
 	/// <summary>
@@ -1105,8 +1131,8 @@ public class MainScript : MonoBehaviour
 	public void SwapActionsInSolution(PathSolutionScript sol, int nbMoveInSolution)
 	{
 		
-		var pos1 = Random.Range (0, nbMoveInSolution);
-		var pos2 = Random.Range (0, nbMoveInSolution);
+		var pos1 = UnityEngine.Random.Range (0, nbMoveInSolution);
+		var pos2 = UnityEngine.Random.Range (0, nbMoveInSolution);
 		var tmp = sol.Actions[pos1];
 		sol.Actions [pos1] = sol.Actions [pos2];
 		sol.Actions [pos2] = tmp;
@@ -1138,36 +1164,29 @@ public class MainScript : MonoBehaviour
 		return newSol;
 	}
 
-	class Result{
-		int iteration;
-		float currentError;
-		float bestError;
-	}
-
-
-	public string getTempPath()
-	{
-		string path = System.Environment.GetEnvironmentVariable("TEMP");
-		if (!path.EndsWith("\\")) path += "\\";
-		return path;
-	}
-
-	// Ecrit une ligne de log dans le fichier resultats
-	public void logResults(int iteration, float currentError, float bestError)
-	{
-		System.IO.StreamWriter sw = System.IO.File.AppendText(
-			getTempPath() + title);
-
-//		Debug.Log (sw.ToString);
-		try
-		{
-			string logLine = System.String.Format(
-				"{0:G}: {1}.", System.DateTime.Now, "");
-			sw.WriteLine(logLine);
-		}
-		finally
-		{
-			sw.Close();
-		}
-	}
+//	public string getTempPath()
+//	{
+//		string path = System.Environment.GetEnvironmentVariable("TEMP");
+//		if (!path.EndsWith("\\")) path += "\\";
+//		return path;
+//	}
+//
+//	// Ecrit une ligne de log dans le fichier resultats
+//	public void logResults(int iteration, float currentError, float bestError)
+//	{
+//		System.IO.StreamWriter sw = System.IO.File.AppendText(
+//			getTempPath() + title);
+//
+////		UnityEngine.Debug.Log (sw.ToString);
+//		try
+//		{
+//			string logLine = System.String.Format(
+//				"{0:G}: {1}.", System.DateTime.Now, "");
+//			sw.WriteLine(logLine);
+//		}
+//		finally
+//		{
+//			sw.Close();
+//		}
+//	}
 }
