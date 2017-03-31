@@ -995,4 +995,37 @@ public class MainScript : MonoBehaviour
 		// Renvoi de la solution copiée
 		return newSol;
 	}
+
+	class Result{
+		int iteration;
+		float currentError;
+		float bestError;
+	}
+
+
+	public string getTempPath()
+	{
+		string path = System.Environment.GetEnvironmentVariable("TEMP");
+		if (!path.EndsWith("\\")) path += "\\";
+		return path;
+	}
+
+	// Ecrit une ligne de log dans le fichier resultats
+	public void logResults(int iteration, float currentError, float bestError)
+	{
+		System.IO.StreamWriter sw = System.IO.File.AppendText(
+			getTempPath() + title);
+
+//		Debug.Log (sw.ToString);
+		try
+		{
+			string logLine = System.String.Format(
+				"{0:G}: {1}.", System.DateTime.Now, "");
+			sw.WriteLine(logLine);
+		}
+		finally
+		{
+			sw.Close();
+		}
+	}
 }
