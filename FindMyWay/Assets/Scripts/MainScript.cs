@@ -77,13 +77,12 @@ public class MainScript : MonoBehaviour
 		// Affiche un bouton permettant le lancement de l'algorithme de Djikstra
 		if (GUILayout.Button("DEMARRAGE DJIKSTRA"))
 		{
-			for (int i = 0; i < 10; i++) {
-				// Le bouton est inactif si un algorithme est en cours d'exécution
-				if (!_isRunning) {
-					// Démarrage de l'algorithme de Djikstra en pseudo asynchrone
-					StartCoroutine ("Djikstra");
-				}
+			// Le bouton est inactif si un algorithme est en cours d'exécution
+			if (!_isRunning) {
+				// Démarrage de l'algorithme de Djikstra en pseudo asynchrone
+				StartCoroutine ("Djikstra");
 			}
+			Thread.Sleep (100);
 		}
 
 		// Affiche un bouton permettant le lancement de l'algorithme A*
@@ -125,7 +124,7 @@ public class MainScript : MonoBehaviour
 		//-------------------------------------------------
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
-		const int nbMoveInSolution = 25;
+		const int nbMoveInSolution = 10;
 		//-------------------------------------------------
 		// Nous récupérons l'erreur minimum atteignable
 		// Ceci est optionnel et dépendant de la fonction
@@ -136,7 +135,7 @@ public class MainScript : MonoBehaviour
 		//var minError = GetMinError();
 
 		// 2) RECHERCHE CONTINUELLEMENT UNE MEILLEURE SOLUTION
-		var minError = 0;
+		var minError = 5;
 
 		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
 		// Nombre max d'itérations  
@@ -161,8 +160,8 @@ public class MainScript : MonoBehaviour
 		// Initialisation du nombre d'itérations
 		int iterations = 0;
 
-//		while (currentError != minError)
-		while (iterations < iterationsMax)
+		while (currentError != minError)
+//		while (iterations < iterationsMax)
 		{
 			// On obtient une copie de la solution courante
 			// pour ne pas la modifier dans le cas ou la modification
@@ -489,7 +488,7 @@ public class MainScript : MonoBehaviour
 		//------------------ PARAMETRES -------------------
 		//-------------------------------------------------
 		// Nombre de mouvement contenu dans NotificationServices solutions
-		const int nbMoveInSolution = 10;
+		const int nbMoveInSolution = 15;
 		// Initialisation du nombre d'itérations maximum
 		const int iterationsMax = 1000;
 		// Pour la deuxième implémentation
@@ -504,7 +503,7 @@ public class MainScript : MonoBehaviour
 		// 1) ARRETER L'ALGO AVEC L'ERREUR MINIMUM
 		//var minError = GetMinError();
 		// 2) RECHERCHE CONTINUELLEMENT UNE MEILLEURE SOLUTION
-		var minError = 0;
+		var minError = 5;
 		// 3) ARRETER L'ALGO AU BOUT D'UN CERTAIN NOMBRE D'ITERATIONS
 		// Nombre max d'itérations  
 		//-------------------------------------------------
@@ -531,87 +530,87 @@ public class MainScript : MonoBehaviour
 		// Affichage de l'erreur initiale
 		UnityEngine.Debug.Log("Lancement de l'algo recuit simulé 2 : currentError >" + currentError + "< - minimumError >" + minError + "< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
 
-			// --------------- DEUXIEME IMPLEMENTATION ---------------
-			// On fait varier la température en fonction de la stagnation
-	
-			// Initialisation de la valeur de 'stagnation' qui si elle dépasse un
-			// certain seuil provoquera l'augmentation de la température.
-			float stagnationInitial = 0.01f;	// 0.001f
-			float stagnation = stagnationInitial;
-			// Initialisation de la température
-			float temperature = temperatureInit;
-			// Tant que l'erreur minimum n'est pas atteinte
-			while (currentError > minError) {
-				// On obtient une copie de la solution courante
-				// pour ne pas la modifier dans le cas ou la modification
-				// ne soit pas conservée.
-				var newsolution = CopySolution (currentSolution);
-	
-				// On procède à une petite modification de la solution
-				// courante.
-				RandomChangeInSolution (newsolution);
-				// Deuxième possibilité
-				///Inversion de deux positions
-				//SwapActionsInSolution(newsolution, nbMoveInSolution);
-	
-				// Récupère le score de la nouvelle solution
-				// Sachant que l'évaluation peut nécessiter une 
-				// simulation, pour pouvoir la visualiser nous
-				// avons recours à une coroutine
-				var newscoreEnumerator = GetError (newsolution);
-				yield return StartCoroutine (newscoreEnumerator);
-				float newError = newscoreEnumerator.Current;
-	
-				// Tirage d'un nombre aléatoire entre 0 et 1.
-				float rdm = UnityEngine.Random.Range (0f, 1f);
-	
-				// Comparaison de ce nombre à la probabilité d'accepter un changement
-				// déterminée par le critère de Boltzman.
-				if (rdm < BoltzmanCriteria(temperature, currentError, newError)){
-					
-				UnityEngine.Debug.Log ("Changement de solution ancienne>" + currentError + "< nouvelle >" + newError + "> - Time >"+sw.ElapsedMilliseconds+"< (ms)");
-	
-					// Si le nombre est inférieur, on accepte la permutation
-					// et l'on met à jour l'erreur courante.
-					currentError = newError;
-	
-					// Met l'ancienne solution dans la solution courante.
-					currentSolution = newsolution;
-				}
-	
-				// Si l'erreur stagne
-				if (bestError == currentError) {
-					// On incrémente la stagnation
-					stagnation *= 1.001f;
-				} else {
-					// Sinon on la réinitialise
-					stagnation = stagnationInitial;
-				}
-				// Si l'erreur diminue, on met a jour la meilleure solution
-				// et on reset la stagnation initiale
-				if (currentError < bestError) {
-					bestError = currentError;
-					stagnation = stagnationInitial;
-				UnityEngine.Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
+		// --------------- DEUXIEME IMPLEMENTATION ---------------
+		// On fait varier la température en fonction de la stagnation
 
-				}
-	
-				// On met à jour la temperature à chaque tour de boucle :
-				//  - si la stagnation est suffisante la temperature va augmenter
-				//  - sinon la temperature décroit de manière géométrique
-				temperature *= 0.998f + stagnation;
-	
-				// Affichage dans la console de Debug du couple temperature stagnation
-				// pour pouvoir être témoin de l'augmentation de la température lorsque
-				// l'on se retrouve coincé trop longtemps dans un minimum local.
-				//UnityEngine.Debug.Log(temperature + "  -  " + stagnation);
-	
-				// On incrémente le nombre d'itérations
-				iterations++;
-	
-				// On rend la main au moteur Unity3D
-				yield return 0;
+		// Initialisation de la valeur de 'stagnation' qui si elle dépasse un
+		// certain seuil provoquera l'augmentation de la température.
+		float stagnationInitial = 0.01f;	// 0.001f
+		float stagnation = stagnationInitial;
+		// Initialisation de la température
+		float temperature = temperatureInit;
+		// Tant que l'erreur minimum n'est pas atteinte
+		while (currentError > minError) {
+			// On obtient une copie de la solution courante
+			// pour ne pas la modifier dans le cas ou la modification
+			// ne soit pas conservée.
+			var newsolution = CopySolution (currentSolution);
+
+			// On procède à une petite modification de la solution
+			// courante.
+			RandomChangeInSolution (newsolution);
+			// Deuxième possibilité
+			///Inversion de deux positions
+			//SwapActionsInSolution(newsolution, nbMoveInSolution);
+
+			// Récupère le score de la nouvelle solution
+			// Sachant que l'évaluation peut nécessiter une 
+			// simulation, pour pouvoir la visualiser nous
+			// avons recours à une coroutine
+			var newscoreEnumerator = GetError (newsolution);
+			yield return StartCoroutine (newscoreEnumerator);
+			float newError = newscoreEnumerator.Current;
+
+			// Tirage d'un nombre aléatoire entre 0 et 1.
+			float rdm = UnityEngine.Random.Range (0f, 1f);
+
+			// Comparaison de ce nombre à la probabilité d'accepter un changement
+			// déterminée par le critère de Boltzman.
+			if (rdm < BoltzmanCriteria(temperature, currentError, newError)){
+				
+			UnityEngine.Debug.Log ("Changement de solution ancienne>" + currentError + "< nouvelle >" + newError + "> - Time >"+sw.ElapsedMilliseconds+"< (ms)");
+
+				// Si le nombre est inférieur, on accepte la permutation
+				// et l'on met à jour l'erreur courante.
+				currentError = newError;
+
+				// Met l'ancienne solution dans la solution courante.
+				currentSolution = newsolution;
 			}
+
+			// Si l'erreur stagne
+			if (bestError == currentError) {
+				// On incrémente la stagnation
+				stagnation *= 1.001f;
+			} else {
+				// Sinon on la réinitialise
+				stagnation = stagnationInitial;
+			}
+			// Si l'erreur diminue, on met a jour la meilleure solution
+			// et on reset la stagnation initiale
+			if (currentError < bestError) {
+				bestError = currentError;
+				stagnation = stagnationInitial;
+			UnityEngine.Debug.Log("Meilleure solution trouvée >"+bestError+"< iteration >"+iterations+"< - Time >"+sw.ElapsedMilliseconds+"< (ms)");
+
+			}
+
+			// On met à jour la temperature à chaque tour de boucle :
+			//  - si la stagnation est suffisante la temperature va augmenter
+			//  - sinon la temperature décroit de manière géométrique
+			temperature *= 0.998f + stagnation;
+
+			// Affichage dans la console de Debug du couple temperature stagnation
+			// pour pouvoir être témoin de l'augmentation de la température lorsque
+			// l'on se retrouve coincé trop longtemps dans un minimum local.
+			//UnityEngine.Debug.Log(temperature + "  -  " + stagnation);
+
+			// On incrémente le nombre d'itérations
+			iterations++;
+
+			// On rend la main au moteur Unity3D
+			yield return 0;
+		}
 	// Fin de l'algorithme, on indique que son exécution est stoppée
 	_isRunning = false;
 
